@@ -1,12 +1,17 @@
-package com.changeguard.impact;
+package com.changeguard.service;
 
-import java.util.*;
+import com.changeguard.exception.InvalidContractException;
+import com.changeguard.dto.ImpactReport;
+import com.changeguard.dto.ImpactRequest;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import com.changeguard.impact.ImpactReport.Risk;
+import com.changeguard.dto.ImpactReport.Risk;
 
 class ImpactServiceTest {
-    private final ImpactService service = new ImpactService();
+    private final ImpactService service = new ImpactService(new DependencyGraphService());
     private final Map<String, Map<String, String>> before =
             Map.of("GET /payments", Map.of("id", "string", "amount", "number"));
     private final Map<String, List<String>> graph = Map.of(
@@ -44,14 +49,14 @@ class ImpactServiceTest {
         assertFalse(report.requiresReview());
     }
     @Test void invalidData() {
-        assertThrows(IllegalArgumentException.class, () -> service.analyze(null));
-        assertThrows(IllegalArgumentException.class, () -> service.analyze(new ImpactRequest(" ", before, before, null)));
-        assertThrows(IllegalArgumentException.class, () -> service.analyze(new ImpactRequest("payments", null, before, null)));
-        assertThrows(IllegalArgumentException.class, () -> service.analyze(request(Map.of("GET /payments", Map.of("id", "uuid")))));
+        assertThrows(InvalidContractException.class, () -> service.analyze(null));
+        assertThrows(InvalidContractException.class, () -> service.analyze(new ImpactRequest(" ", before, before, null)));
+        assertThrows(InvalidContractException.class, () -> service.analyze(new ImpactRequest("payments", null, before, null)));
+        assertThrows(InvalidContractException.class, () -> service.analyze(request(Map.of("GET /payments", Map.of("id", "uuid")))));
     }
     @Test void nullTypeIsRejected() {
         var fields = new HashMap<String, String>(); fields.put("id", null);
-        assertThrows(IllegalArgumentException.class, () -> service.analyze(request(Map.of("GET /payments", fields))));
+        assertThrows(InvalidContractException.class, () -> service.analyze(request(Map.of("GET /payments", fields))));
     }
     @Test void missingGraphIsAllowed() {
         assertTrue(service.analyze(new ImpactRequest("payments", before, Map.of(), null)).potentialConsumers().isEmpty());

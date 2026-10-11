@@ -1,11 +1,22 @@
-package com.changeguard.impact;
+package com.changeguard.service;
 
-import java.util.*;
+import com.changeguard.dto.ImpactReport;
+import com.changeguard.dto.ImpactRequest;
+import com.changeguard.exception.InvalidContractException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import org.springframework.stereotype.Service;
-import com.changeguard.impact.ImpactReport.*;
+import com.changeguard.dto.ImpactReport.Consumer;
+import com.changeguard.dto.ImpactReport.Finding;
+import com.changeguard.dto.ImpactReport.Risk;
 
 @Service
 public class ImpactService {
+    private final DependencyGraphService graph;
+    public ImpactService(DependencyGraphService graph) { this.graph = graph; }
     private static final Set<String> TYPES = Set.of("string", "integer", "number", "boolean", "object", "array");
 
     public ImpactReport analyze(ImpactRequest request) {
@@ -27,7 +38,7 @@ public class ImpactService {
             }
         }
         boolean changed = !request.before().equals(request.after());
-        var consumers = changed ? trace(request.service(), request.dependencies()) : List.<Consumer>of();
+        var consumers = changed ? graph.trace(request.service(), request.dependencies()) : List.<Consumer>of();
         var tests = consumers.stream().filter(c -> c.distance() == 1)
                 .map(c -> "Run consumer contract tests: " + c.service() + " -> " + request.service()).toList();
         Risk risk = !findings.isEmpty() ? Risk.HIGH : changed ? Risk.LOW : Risk.NONE;
@@ -38,56 +49,24 @@ public class ImpactService {
                 "Additive fields are low risk; strict clients may reject them."));
     }
 
-    private List<Consumer> trace(String service, Map<String, List<String>> dependencies) {
-        var reverse = new HashMap<String, Set<String>>();
-        if (dependencies != null) {
-            dependencies.forEach((consumer, providers) -> providers.forEach(provider ->
-                    reverse.computeIfAbsent(provider, ignored -> new TreeSet<>()).add(consumer)));
-        }
-        var seen = new HashSet<String>();
-        seen.add(service);
-        var queue = new ArrayDeque<List<String>>();
-        queue.add(List.of(service));
-        var result = new ArrayList<Consumer>();
-        while (!queue.isEmpty()) {
-            var path = queue.remove();
-            for (String consumer : reverse.getOrDefault(path.getLast(), Set.of())) {
-                if (seen.add(consumer)) {
-                    var nextPath = new ArrayList<>(path);
-                    nextPath.add(consumer);
-                    var immutablePath = List.copyOf(nextPath);
-                    result.add(new Consumer(consumer, immutablePath.size() - 1, immutablePath));
-                    queue.add(immutablePath);
-                }
-            }
-        }
-        return List.copyOf(result);
-    }
-
     private void validate(ImpactRequest request) {
         if (request == null || blank(request.service())) {
-            throw new IllegalArgumentException("service must be a nonempty string");
+            throw new InvalidContractException("service must be a nonempty string");
         }
         validateContract(request.before(), "before");
         validateContract(request.after(), "after");
-        if (request.dependencies() != null) {
-            request.dependencies().forEach((consumer, providers) -> {
-                if (blank(consumer) || providers == null || providers.stream().anyMatch(this::blank)) {
-                    throw new IllegalArgumentException("dependencies must map consumer names to provider name lists");
-                }
-            });
-        }
+        graph.validate(request.service(), request.dependencies());
     }
 
     private void validateContract(Map<String, Map<String, String>> contract, String name) {
-        if (contract == null) throw new IllegalArgumentException(name + " must be an endpoint map");
+        if (contract == null) throw new InvalidContractException(name + " must be an endpoint map");
         contract.forEach((endpoint, fields) -> {
             if (blank(endpoint) || fields == null) {
-                throw new IllegalArgumentException("Endpoints must map nonempty names to response field maps");
+                throw new InvalidContractException("Endpoints must map nonempty names to response field maps");
             }
             fields.forEach((field, type) -> {
                 if (blank(field) || type == null || !TYPES.contains(type)) {
-                    throw new IllegalArgumentException("Fields must use supported JSON type names");
+                    throw new InvalidContractException("Fields must use supported JSON type names");
                 }
             });
         });

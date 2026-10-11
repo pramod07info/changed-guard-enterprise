@@ -1,4 +1,4 @@
-package com.changeguard.impact;
+package com.changeguard.dto;
 
 import java.util.List;
 

@@ -1,9 +1,20 @@
-package com.changeguard.impact;
+package com.changeguard.service;
 
-import java.util.*;
+import com.changeguard.dto.ImpactReport;
+import com.changeguard.dto.OpenApiReport;
+import com.changeguard.dto.OpenApiRequest;
+import com.changeguard.exception.InvalidContractException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import org.springframework.stereotype.Service;
-import com.changeguard.impact.OpenApiReport.Change;
-import com.changeguard.impact.ImpactReport.Risk;
+import com.changeguard.dto.OpenApiReport.Change;
+import com.changeguard.dto.ImpactReport.Risk;
 
 /** Bounded OpenAPI 3.0 JSON importer. Never fetches references or executes code. */
 @Service
@@ -11,8 +22,8 @@ public class OpenApiService {
     private static final Set<String> METHODS = Set.of("get", "put", "post", "delete", "patch", "options", "head", "trace");
     private static final Set<String> SCHEMA_KEYS = Set.of("type", "properties", "required", "enum", "nullable", "items",
             "title", "description", "example", "deprecated");
-    private final ImpactService impact;
-    public OpenApiService(ImpactService impact) { this.impact = impact; }
+    private final DependencyGraphService graph;
+    public OpenApiService(DependencyGraphService graph) { this.graph = graph; }
 
     record Schema(String type, boolean nullable, Set<Object> values,
             Map<String, Schema> properties, Set<String> required, Schema items) {}
@@ -21,7 +32,7 @@ public class OpenApiService {
     public OpenApiReport analyze(OpenApiRequest request) {
         if (request == null) throw invalid("request is required");
         // Reuse service-name and graph validation before importing either document.
-        impact.analyze(new ImpactRequest(request.service(), Map.of(), Map.of(), request.dependencies()));
+        graph.validate(request.service(), request.dependencies());
         var before = operations(request.before());
         var after = operations(request.after());
         var changes = new ArrayList<Change>();
@@ -56,10 +67,11 @@ public class OpenApiService {
                     add(changes, "RESPONSE_STATUS_ADDED", key, "response/" + status, "Consumers may not handle this new response status");
         }
         boolean changed = !before.equals(after);
-        var graphReport = impact.analyze(new ImpactRequest(request.service(), Map.of(),
-                changed ? Map.of("change", Map.of()) : Map.of(), request.dependencies()));
+        var consumers = changed ? graph.trace(request.service(), request.dependencies()) : List.<ImpactReport.Consumer>of();
+        var tests = consumers.stream().filter(c -> c.distance() == 1)
+                .map(c -> "Run consumer contract tests: " + c.service() + " -> " + request.service()).toList();
         return new OpenApiReport(request.service(), changes.isEmpty() ? (changed ? Risk.LOW : Risk.NONE) : Risk.HIGH,
-                List.copyOf(changes), graphReport.potentialConsumers(), graphReport.recommendedTests(),
+                List.copyOf(changes), consumers, tests,
                 !changes.isEmpty(), List.of(
                 "Bounded OpenAPI 3.0 JSON subset, not a complete OpenAPI validator or compatibility proof.",
                 "Only application/json bodies and supported schema keywords are analyzed.",
@@ -231,7 +243,7 @@ public class OpenApiService {
             throw invalid(location + " must be an object");
         return (Map<String, Object>) map;
     }
-    private IllegalArgumentException invalid(String message) { return new IllegalArgumentException(message); }
+    private InvalidContractException invalid(String message) { return new InvalidContractException(message); }
     private String escape(String value) { return value.replace("~", "~0").replace("/", "~1"); }
     private void add(List<Change> changes, String code, String op, String location, String explanation) {
         changes.add(new Change(code, op, location, explanation));

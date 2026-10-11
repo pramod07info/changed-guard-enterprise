@@ -50,6 +50,8 @@ The Docker image build has not been executed.
 ## Planned stack
 
 See [architecture](docs/architecture.md) for implementation status and sequence.
+See [backend package conventions](docs/backend-architecture.md) and
+[implementation changelog](docs/CHANGELOG.md) for code organization and changes.
 The local API has no authentication or tenant isolation and is bound to
 localhost. Production deployment requires authentication, limits, audit and
 tenant isolation. No AWS or Kubernetes resources are provisioned.

@@ -1,12 +1,18 @@
-package com.changeguard.impact;
+package com.changeguard.service;
 
-import java.util.*;
+import com.changeguard.exception.InvalidContractException;
+import com.changeguard.dto.ImpactReport;
+import com.changeguard.dto.OpenApiReport;
+import com.changeguard.dto.OpenApiRequest;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import com.changeguard.impact.ImpactReport.Risk;
+import com.changeguard.dto.ImpactReport.Risk;
 
 class OpenApiServiceTest {
-    private final OpenApiService service = new OpenApiService(new ImpactService());
+    private final OpenApiService service = new OpenApiService(new DependencyGraphService());
     private Map<String, Object> primitive(String type) { return Map.of("type", type); }
     private Map<String, Object> object(Map<String, Object> fields, List<String> required) {
         return Map.of("type", "object", "properties", fields, "required", required);
@@ -91,37 +97,37 @@ class OpenApiServiceTest {
         assertEquals(Risk.NONE, analyze(a, doc(null, primitive("string"))).risk());
     }
     @Test void externalRecursiveAndMissingReferencesRejected() {
-        assertThrows(IllegalArgumentException.class, () -> analyze(doc(null, Map.of("$ref", "https://example.com/schema")), doc(null, primitive("string"))));
+        assertThrows(InvalidContractException.class, () -> analyze(doc(null, Map.of("$ref", "https://example.com/schema")), doc(null, primitive("string"))));
         var recursive = new HashMap<>(doc(null, Map.of("$ref", "#/components/schemas/Loop")));
         recursive.put("components", Map.of("schemas", Map.of("Loop", Map.of("$ref", "#/components/schemas/Loop"))));
-        assertThrows(IllegalArgumentException.class, () -> analyze(recursive, recursive));
+        assertThrows(InvalidContractException.class, () -> analyze(recursive, recursive));
         var missing = doc(null, Map.of("$ref", "#/components/schemas/Missing"));
-        assertThrows(IllegalArgumentException.class, () -> analyze(missing, missing));
+        assertThrows(InvalidContractException.class, () -> analyze(missing, missing));
     }
     @Test void unsupportedSchemasAndVersionsRejected() {
         for (var schema : List.of(Map.<String, Object>of("type", "string", "minLength", 1),
                 Map.<String, Object>of("allOf", List.of(primitive("string"))),
                 Map.<String, Object>of("type", "object", "additionalProperties", false))) {
-            assertThrows(IllegalArgumentException.class, () -> analyze(doc(null, schema), doc(null, schema)));
+            assertThrows(InvalidContractException.class, () -> analyze(doc(null, schema), doc(null, schema)));
         }
         var a = new HashMap<>(doc(null, primitive("string"))); a.put("openapi", "3.1.0");
-        assertThrows(IllegalArgumentException.class, () -> analyze(a, a));
+        assertThrows(InvalidContractException.class, () -> analyze(a, a));
     }
     @Test void parametersAndSecurityRejected() {
         var a = new HashMap<>(doc(null, primitive("string"))); a.put("security", List.of());
-        assertThrows(IllegalArgumentException.class, () -> analyze(a, a));
+        assertThrows(InvalidContractException.class, () -> analyze(a, a));
         var b = Map.<String, Object>of("openapi", "3.0.3", "paths",
                 Map.of("/orders", Map.of("parameters", List.of())));
-        assertThrows(IllegalArgumentException.class, () -> analyze(b, b));
+        assertThrows(InvalidContractException.class, () -> analyze(b, b));
     }
     @Test void nestingLimitAndMalformedSchemas() {
         Map<String, Object> nested = primitive("string");
         for (int i = 0; i < 35; i++) nested = Map.of("type", "array", "items", nested);
         var a = doc(null, nested);
-        assertThrows(IllegalArgumentException.class, () -> analyze(a, a));
+        assertThrows(InvalidContractException.class, () -> analyze(a, a));
         var b = doc(null, Map.of("type", "string", "nullable", "true"));
-        assertThrows(IllegalArgumentException.class, () -> analyze(b, b));
-        assertThrows(IllegalArgumentException.class, () -> service.analyze(null));
+        assertThrows(InvalidContractException.class, () -> analyze(b, b));
+        assertThrows(InvalidContractException.class, () -> service.analyze(null));
     }
     @Test void requiredBodyAndStatuses() {
         var old = doc(null, primitive("string"));
