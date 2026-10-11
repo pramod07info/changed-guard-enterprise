@@ -37,9 +37,9 @@ The Docker build skips database tests; GitHub CI runs them against PostgreSQL.
 From repository root in another terminal:
 
 ```sh
-curl -H "Content-Type: application/json" --data-binary @examples/change.json http://localhost:8080/api/v1/impact
+curl -H "Authorization: Bearer $CHANGEGUARD_ACCESS_TOKEN" -H "Content-Type: application/json" --data-binary @examples/change.json http://localhost:8080/api/v1/impact
 curl http://localhost:8080/actuator/health
-curl http://localhost:8080/actuator/prometheus
+curl -H "Authorization: Bearer $CHANGEGUARD_ACCESS_TOKEN" http://localhost:8080/actuator/prometheus
 ```
 
 Dependencies are consumer -> provider lists. Contracts are maps of endpoint

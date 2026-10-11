@@ -7,7 +7,7 @@ The existing normalized /api/v1/impact endpoint remains available.
 From repository root with the backend running:
 
 ```sh
-curl -H "Content-Type: application/json" --data-binary @examples/openapi-change.json http://localhost:8080/api/v1/impact/openapi
+curl -H "Authorization: Bearer $CHANGEGUARD_ACCESS_TOKEN" -H "Content-Type: application/json" --data-binary @examples/openapi-change.json http://localhost:8080/api/v1/impact/openapi
 ```
 
 Findings include code, operation, schema location and explanation. Location
