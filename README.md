@@ -9,6 +9,7 @@ pramod07info/ChangeGuard.
 - Normalized response contract comparison: endpoint removal, field removal, type changes.
 - Cycle-safe dependency traversal with potential consumers and shortest impact paths.
 - REST API, structured HTTP 400 errors, Actuator health and Prometheus metrics.
+- OpenAPI 3.0 JSON import with nested schemas, local references and directional request/response checks.
 - Unit and HTTP tests, Docker build and local Compose entry point.
 
 No AI inference, persistence or external integrations run in this first slice.
@@ -33,7 +34,8 @@ curl http://localhost:8080/actuator/prometheus
 
 Dependencies are consumer -> provider lists. Contracts are maps of endpoint
 names to response field types (string, integer, number, boolean, object, array).
-These are normalized JSON contracts, not OpenAPI documents. Potential impact
+The original endpoint accepts normalized JSON contracts. For embedded OpenAPI
+documents use [the OpenAPI endpoint](docs/openapi.md). Potential impact
 does not prove endpoint usage. Additive fields are LOW risk; strict consumers
 may reject them. Review flags are advisory.
 

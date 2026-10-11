@@ -12,13 +12,13 @@ suggests tests; it must not override compatibility rules or deploy changes.
 | Messaging | Apache Kafka | Planned asynchronous analysis jobs |
 | Database | PostgreSQL, pgvector | Planned reports, audit, tenants and retrieval |
 | Dependency analysis | JavaParser, Neo4j | Planned source extraction and persisted graph |
-| API contracts | OpenAPI, Pact | Planned schema import and consumer verification |
+| API contracts | OpenAPI, Pact | Bounded OpenAPI 3.0 JSON import implemented; Pact planned |
 | Kafka contracts | Avro, Schema Registry | Planned directional event compatibility |
 | Integrations | GitHub, GitLab, Jenkins | Planned authenticated repository and CI adapters |
 | Infrastructure | Docker, Kubernetes, AWS | Docker build supplied; Kubernetes/AWS planned |
 | Observability | OpenTelemetry, Prometheus | Prometheus endpoint supplied; tracing planned |
 
-1. Run Java tests, add OpenAPI import with directional request/response rules.
+1. OpenAPI import with directional request/response rules implemented; extend constraints and parameters next.
 2. Persist projects, contract snapshots and analysis reports in PostgreSQL.
 3. Build React report UI, authenticate users and enforce tenant boundaries.
 4. Extract Java call dependencies using JavaParser; persist verified edges in Neo4j.

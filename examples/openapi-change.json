@@ -1,0 +1,81 @@
+{
+  "service": "payments",
+  "before": {
+    "openapi": "3.0.3",
+    "info": {
+      "title": "Payments",
+      "version": "1.0.0"
+    },
+    "paths": {
+      "/payments": {
+        "get": {
+          "responses": {
+            "200": {
+              "description": "Payment",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "amount": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "amount"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "after": {
+    "openapi": "3.0.3",
+    "info": {
+      "title": "Payments",
+      "version": "1.0.0"
+    },
+    "paths": {
+      "/payments": {
+        "get": {
+          "responses": {
+            "200": {
+              "description": "Payment",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "orders": [
+      "payments"
+    ],
+    "checkout": [
+      "orders"
+    ]
+  }
+}

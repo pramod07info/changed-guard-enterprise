@@ -38,4 +38,22 @@ class ImpactHttpTest {
         assertEquals(200, response.statusCode());
         assertTrue(response.body().contains("UP"));
     }
+
+    @Test void openApiEndpointAndUnsupportedVersion() throws Exception {
+        String body = """
+                {"service":"orders","before":{"openapi":"3.0.3","paths":{"/orders":{"get":{"responses":{"200":{"description":"OK"}}}}}},
+                "after":{"openapi":"3.0.3","paths":{}}}
+                """;
+        var client = HttpClient.newHttpClient();
+        var uri = URI.create("http://127.0.0.1:" + port + "/api/v1/impact/openapi");
+        var response = client.send(HttpRequest.newBuilder(uri).header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(body)).build(), HttpResponse.BodyHandlers.ofString());
+        assertEquals(200, response.statusCode());
+        assertTrue(response.body().contains("OPERATION_REMOVED"));
+        var invalid = client.send(HttpRequest.newBuilder(uri).header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(body.replace("3.0.3", "3.1.0"))).build(),
+                HttpResponse.BodyHandlers.ofString());
+        assertEquals(400, invalid.statusCode());
+        assertTrue(invalid.body().contains("Only OpenAPI"));
+    }
 }
