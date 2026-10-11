@@ -51,6 +51,14 @@ may reject them. Review flags are advisory.
 
 ## Validation status
 
+Dashboard/authentication phase: 47 backend tests, 4 frontend unit tests and
+2 browser smoke tests passed; the frontend production build passed.
+[Backend CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38145550800)
+and [frontend CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38145550812).
+Browser tests use mocked API responses; real signed JWT and PostgreSQL
+isolation behavior are tested in the backend suite. A live provider connection
+and Docker Compose runtime have not been exercised here.
+
 The PostgreSQL history phase passed 39 tests in
 [Java 21/PostgreSQL CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38141417435).
 
