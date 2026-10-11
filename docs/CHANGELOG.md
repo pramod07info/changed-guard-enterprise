@@ -1,3 +1,12 @@
+# Built-in OAuth 2 login
+
+- Replaced external identity-provider configuration and token-paste UI with an
+  embedded Spring Security authorization server and public PKCE browser client.
+- Added PostgreSQL users, BCrypt authentication and a local-only Flyway demo seed.
+- Kept signed JWT validation and tenant isolation; removed fixed-token development code.
+- Added OAuth protocol/user/callback tests and updated proxies, Compose and CI.
+- Documented setup, profile changes, keys, token lifetime and single-instance limits.
+
 # Implementation changelog
 
 ## 2026-10-11 — Dashboard and tenant authentication

@@ -7,7 +7,7 @@ pramod07info/ChangeGuard.
 ## Implemented
 
 - React/TypeScript dashboard for contract analysis, saved history and snapshots.
-- Verified JWT authentication and tenant-scoped persistence access.
+- Built-in OAuth 2 authorization server, PostgreSQL users, PKCE dashboard login and tenant-scoped persistence.
 
 - Normalized response contract comparison: endpoint removal, field removal, type changes.
 - Cycle-safe dependency traversal with potential consumers and shortest impact paths.
@@ -20,7 +20,7 @@ AI inference and external repository integrations remain planned.
 
 ## Run with Java 21 and Maven 3.9+
 
-First set CHANGEGUARD_DB_PASSWORD plus JWT issuer/JWKS/audience variables
+First set CHANGEGUARD_DB_PASSWORD and SPRING_PROFILES_ACTIVE=local, as
 described in [dashboard and security setup](docs/dashboard-security.md), then start PostgreSQL with
 docker compose up -d postgres from repository root.
 See [persistence setup](docs/persistence.md) for environment variables and endpoints.
@@ -32,7 +32,7 @@ mvn spring-boot:run
 ```
 
 Or from repository root: `docker compose up --build`.
-Open http://localhost:3000 and connect with a trusted identity-provider access token.
+Open http://localhost:3000 and click Sign in. Local user: `pramod` / `ChangeGuard123!`.
 The Docker build skips database tests; GitHub CI runs them against PostgreSQL.
 From repository root in another terminal:
 
@@ -51,22 +51,9 @@ may reject them. Review flags are advisory.
 
 ## Validation status
 
-Dashboard/authentication phase: 47 backend tests, 4 frontend unit tests and
-2 browser smoke tests passed; the frontend production build passed.
-[Backend CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38145550800)
-and [frontend CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38145550812).
-Browser tests use mocked API responses; real signed JWT and PostgreSQL
-isolation behavior are tested in the backend suite. A live provider connection
-and Docker Compose runtime have not been exercised here.
-
-The PostgreSQL history phase passed 39 tests in
-[Java 21/PostgreSQL CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38141417435).
-
-Java 21, Maven and Docker were unavailable in the authoring environment.
-GitHub Actions successfully ran Java 21 Maven verify for foundation commit
-`985948f761e7a514e37f7913469ce4f405d1058c`:
-https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38138773579
-The Docker image build has not been executed.
+The built-in OAuth login phase adds protocol, user authentication, PKCE and
+callback tests. See [authentication setup](docs/dashboard-security.md) for run
+configuration, local seed credentials and deployment limitations.
 
 ## Planned stack
 

@@ -20,7 +20,7 @@ suggests tests; it must not override compatibility rules or deploy changes.
 
 1. OpenAPI import with directional request/response rules implemented; extend constraints and parameters next.
 2. Snapshot/report persistence implemented; projects and tenant isolation remain planned.
-3. React UI, JWT authentication and tenant-scoped persistence implemented; OIDC sign-in and RBAC planned.
+3. React UI, JWT authentication and tenant-scoped persistence implemented; built-in OAuth 2 PKCE sign-in implemented; RBAC planned.
 4. Extract Java call dependencies using JavaParser; persist verified edges in Neo4j.
 5. Add idempotent Kafka jobs, retry policies and dead-letter handling.
 6. Add Pact and Avro compatibility checks with contract registry adapters.

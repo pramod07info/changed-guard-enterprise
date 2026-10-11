@@ -14,7 +14,7 @@
 - Match test packages to the tested layer and run backend Maven verify.
 - Update docs/CHANGELOG.md for code changes. Update architecture documentation
   when boundaries or implementation status change.
-- Keep credentials out of source and preserve existing API behavior unless
+- Keep production credentials out of source (local-only demo hashes may be seeded by Flyway) and preserve existing API behavior unless
   a deliberate versioned change is documented.
 
 - Resolve tenant IDs from verified JWT claims, never request fields or headers.

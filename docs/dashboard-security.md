@@ -1,98 +1,107 @@
-# Dashboard, authentication and tenant isolation — phase 4
+# Dashboard authentication and tenant isolation
 
-## Identity provider setup
+## ChangeGuard OAuth 2 server
 
-The backend is an OAuth2 JWT resource server. It does not issue tokens or
-store user passwords. Configure a trusted identity provider such as your
-organization's OIDC provider with an access token containing:
+ChangeGuard now hosts its own Spring Security OAuth 2 authorization server.
+Keycloak, external JWKS configuration and the fixed local token are removed.
+The dashboard uses Authorization Code with mandatory S256 PKCE. It is a public
+client (`changeguard-dashboard`) with no browser client secret or password grant.
+Click Sign in, authenticate on the backend login page, and return to the dashboard.
+The frontend exchanges the code at `/oauth2/token` through its same-origin proxy.
 
-| Claim | Requirement |
+Backend protocol routes: `/oauth2/authorize`, `/oauth2/token`, `/oauth2/jwks`.
+`/api/v1/auth/config` exposes endpoint URLs and the public client ID, never keys.
+Spring Security owns OAuth protocol handling and the CSRF-protected login/logout
+forms; application controllers do not reimplement the protocol.
+
+## Local run
+
+Set `CHANGEGUARD_DB_PASSWORD` and run PostgreSQL:
+
+```sh
+docker compose up -d postgres
+```
+
+For an IDE backend run, set `SPRING_PROFILES_ACTIVE=local`, retaining database
+connection variables. Remove the old `CHANGEGUARD_JWT_*` variables and any
+`local-dev` profile. Run Java 21/Maven:
+
+```sh
+cd backend
+mvn verify
+mvn spring-boot:run
+```
+
+Alternatively set the environment profile in your terminal before these commands.
+PowerShell: `$env:SPRING_PROFILES_ACTIVE="local"`.
+For all services: `docker compose up --build`, then open http://localhost:3000.
+The Compose file enables the local profile explicitly. Keycloak can be stopped;
+no service on port 8180 is needed.
+
+Flyway V3 creates `application_user` with a constrained tenant ID and encoded
+password column. V4 in `db/local` inserts the local user:
+
+| Username | Password | Tenant |
+| --- | --- | --- |
+| pramod | ChangeGuard123! | local-team |
+
+The password is stored as a BCrypt hash, never plaintext. The local migration
+is enabled only by `application-local.yml`. Do not promote this local database
+into production; deployed databases use the normal migration location and no
+seed user. If an existing local database is switched to another profile, Flyway
+may report the local V4 migration as missing: retain the local migration location
+for that development database, or use a separate clean deployment database.
+
+The local profile generates an RSA signing key on startup; backend restart
+invalidates previously issued tokens. Sign in again after a restart.
+
+## Configuration and deployment boundaries
+
+| Variable | Default / purpose |
 | --- | --- |
-| iss | Exact configured issuer |
-| aud | Includes configured API audience |
-| sub | Nonempty user identity |
-| exp | Required future expiration, subject to Spring Security clock skew |
-| tenant_id | String matching [A-Za-z0-9][A-Za-z0-9._-]{0,99} |
+| CHANGEGUARD_AUTH_ISSUER | http://localhost:8080; canonical public backend URL |
+| CHANGEGUARD_FRONTEND_URL | http://localhost:3000; logout destination |
+| CHANGEGUARD_FRONTEND_ORIGINS | Exact allowed local frontend origins for token CORS |
+| CHANGEGUARD_REDIRECT_URIS | Exact callback URLs on local ports 3000/5173 |
+| CHANGEGUARD_SIGNING_JWK | Private RSA JWK JSON with kid, >=2048 bits; required outside exclusive local profile |
 
-The provider must assign tenant_id from trusted membership data. Never let
-users choose or edit that claim. This implementation accepts one tenant per
-token and grants tenant members the same analysis permissions. RBAC is planned.
-Signing keys come only from the server-configured JWKS URL. The default
-Nimbus decoder accepts RS256; issuer/timestamps/audience/required claims are
-validated. No client-supplied issuer or signing key is trusted.
+Outside local use HTTPS public URLs, exact deployment origins/callbacks and a
+secret-managed stable signing key. No signing key belongs in source control.
+Tokens last 30 minutes, validate signature, issuer, expiry, subject, audience
+`changeguard-api` and tenant membership. The tenant claim is read from the user
+row at issuance, never from a request/header. API calls require Bearer headers
+and never use login session cookies. Login/logout retain CSRF protection.
 
-Set CHANGEGUARD_JWT_ISSUER, CHANGEGUARD_JWKS_URI and CHANGEGUARD_JWT_AUDIENCE
-alongside CHANGEGUARD_DB_PASSWORD. Use HTTPS identity endpoints outside local
-development. Compose does not provision an identity provider.
+Current OAuth client registrations, login sessions and authorization codes are
+in memory. Restart loses pending authorizations; this phase supports a single
+backend instance. Durable authorization/session storage, key rotation, refresh,
+rate limiting, account administration, RBAC and audit remain follow-up work.
+The public browser client does not receive refresh tokens; sign in again after
+expiry. Logout clears the backend session after the confirmation form; existing
+signed tokens remain valid until expiry (no token revocation list).
 
-All API and metrics routes now require Authorization: Bearer ACCESS_TOKEN.
-Only GET /actuator/health is public. This deliberately changes the earlier
-unauthenticated development API. Existing example curl commands need an
-Authorization header. For example:
+## Dashboard storage
 
-```sh
-curl -H "Authorization: Bearer $CHANGEGUARD_ACCESS_TOKEN" -H "Content-Type: application/json" --data-binary @examples/openapi-change.json http://localhost:8080/api/v1/analyses
-```
+Access tokens stay in React memory. Session storage holds only the temporary
+PKCE verifier/state, expires after ten minutes, and is removed on callback.
+The callback validates state and age before exchanging a code, clears the URL,
+and does not expose credentials in logs. Sign out clears workspace data;
+HTTP 401 requires a new sign-in. Local storage is not used.
+Vite and Nginx forward `/api` and `/oauth2/token` to the backend.
 
-Use trusted access tokens from your provider; no real tokens belong in source
-or logs. This resource server is stateless and accepts bearer headers, not
-session cookies. CSRF is disabled for that authentication model.
+## Tenant boundaries
 
-## Dashboard
+TenantContext resolves verified claims. All report/snapshot reads and history
+queries filter tenant_id; another tenant's UUID returns 404. Composite foreign
+keys enforce consistent report/snapshot tenants. Flyway V2 retains old unowned
+history under `__legacy_unassigned__`, which cannot be used in an access token.
+No automatic ownership assignment is performed.
 
-Docker Compose serves the dashboard at http://localhost:3000. Connect with an
-identity-provider access token. The first request to /api/v1/session verifies
-identity before loading the workspace.
+## Verification
 
-Features: editable before/after OpenAPI JSON, dependency graph input, preview,
-analyze-and-save, risk/findings/impact paths, suggested tests, saved report
-history with pagination and snapshot viewing. Inputs are rendered as text.
-
-Tokens remain in React memory; no localStorage, sessionStorage or cookies
-are used. Disconnect and refresh clear token/report/history state. An HTTP
-401 disconnects the workspace. Requests have a timeout, and responses from
-a disconnected session cannot populate a newer workspace.
-
-This initial connection flow uses a token, not a browser OIDC sign-in flow.
-SSO authorization-code/PKCE login, automatic refresh and server-side revocation
-are future integration work.
-
-For frontend development use Node 22:
-
-```sh
-cd frontend
-npm ci
-npm test
-npm run build
-npm run dev
-```
-
-Vite forwards /api to localhost:8080; CHANGEGUARD_API_PROXY can override it.
-Browser smoke tests use mocked API responses and do not replace backend
-JWT/isolation tests. Run npx playwright install chromium then npm run test:e2e.
-They cover connect, preview/save, history, snapshots, logout, token expiry and
-mobile overflow.
-Compose uses Nginx to serve the app and forward /api to the backend, keeping
-browser requests same-origin. Production deployment must terminate HTTPS.
-
-## Tenant boundaries and existing data
-
-The authenticated tenant is resolved by TenantContext in the service layer.
-Every report/snapshot read and history query includes tenant_id. UUIDs alone
-do not grant access. Other tenants' IDs return 404. Composite foreign keys
-also prevent reports from linking to another tenant's snapshots.
-This is application-query isolation plus relational integrity, not PostgreSQL
-row-level security. SQL access by administrators remains privileged.
-
-Flyway V2 quarantines all pre-tenant rows under __legacy_unassigned__. JWT
-validation forbids that tenant value. Existing history is retained but cannot
-be read through the API until an administrator verifies ownership and performs
-a coordinated reassignment of report/snapshot rows. No automatic ownership
-guessing or user-facing reassignment endpoint exists.
-
-Tests cover signed tokens, expiry, invalid signatures, issuer/audience claims,
-anonymous requests, cross-tenant API access, composite foreign keys and
-upgrade of existing unowned history. HTTP fixture decoders exist only in tests.
-
-Audit trails, RBAC, tenant membership administration, retention/redaction and
-OIDC sign-in remain planned.
+Backend coverage includes database login, wrong passwords, CSRF, PKCE failures,
+code replay, signed token/session use, cookie rejection for APIs, fixed-token
+rejection and existing JWT/tenant isolation tests. Frontend unit tests cover PKCE
+and callback state/expiry; browser fixtures cover login callback, analysis,
+history, snapshots, sign-out and expired sessions. Browser fixtures supplement
+the backend protocol tests and do not prove a live browser/backend deployment.

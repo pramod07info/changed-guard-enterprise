@@ -46,3 +46,12 @@ handle SQL. ResourceNotFoundException maps missing rows to HTTP 404.
 See persistence.md for PostgreSQL setup and dashboard-security.md for identity
 configuration. History services require a verified tenant; repositories always
 filter by tenant. JWT authentication and tenant-scoped access are implemented.
+## Built-in authentication
+
+`AuthorizationServerConfig` configures OAuth protocol and login filter chains,
+registered PKCE client, signing keys and token claims. `SecurityConfig` keeps
+API bearer validation stateless. `CorsConfig` restricts token endpoint origins.
+`UserRepository` reads PostgreSQL users; `DatabaseUserDetailsService` supplies
+Spring Security identities. `AuthConfigurationController` returns public endpoint
+configuration using `AuthConfiguration`. Flyway V3 creates users; local V4 seeds
+a BCrypt demo account. Controllers never issue tokens directly.

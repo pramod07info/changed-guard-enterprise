@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { signIn, finishSignIn, signOut } from './lib/auth';
 import { api, ApiError } from './lib/api';
 import { ConnectionPanel } from './components/ConnectionPanel';
 import { AnalysisForm } from './components/AnalysisForm';
@@ -36,6 +37,14 @@ export default function App() {
     generation.current++;
     void run(() => api<Session>('/session', token), session => setConnection({ token, session }));
   };
+  const callbackStarted = useRef(false);
+  useEffect(() => {
+    if (callbackStarted.current) return;
+    callbackStarted.current = true;
+    void run(finishSignIn, token => { if (token) connect(token); });
+  }, []);
+  const login = () => void run(signIn, () => {});
+  const logout = () => { disconnect(); void run(signOut, () => {}); };
   function analyze(input: AnalysisInput, persist: boolean) {
     if (!connection) return;
     setSnapshot(null);
@@ -54,11 +63,11 @@ export default function App() {
     });
   }
   return <><header className="topbar"><a className="brand" href="/"><span className="brand-mark">◇</span>ChangeGuard<span className="brand-label">ENTERPRISE</span></a>
-    {connection && <div className="identity"><span><small>WORKSPACE</small>{connection.session.tenantId}</span><button className="quiet" onClick={disconnect}>Disconnect</button></div>}</header>
+    {connection && <div className="identity"><span><small>WORKSPACE</small>{connection.session.tenantId}</span><button className="quiet" onClick={logout}>Sign out</button></div>}</header>
     <main><div className="page-intro"><span className="eyebrow">CHANGE INTELLIGENCE</span><h1>Know the impact. Own the change.</h1><p>Evidence for the teams and services behind every API.</p></div>
       {error && <div className="alert" role="alert">{error}</div>}{notice && <div className="notice" role="status">{notice}</div>}
       {busy && <p role="status" className="subtle">Working…</p>}
-      {!connection ? <ConnectionPanel connect={connect} busy={busy}/> : <>
+      {!connection ? <ConnectionPanel login={login} busy={busy}/> : <>
         <AnalysisForm submit={analyze} busy={busy} fail={setError}/>
         <ReportPanel report={report} saved={saved} busy={busy} snapshot={id => void run(() => api<Snapshot>('/snapshots/' + id, connection.token), setSnapshot)}/>
         {snapshot && <section className="card"><div className="section-heading"><h2>Contract snapshot</h2><button className="quiet" onClick={() => setSnapshot(null)}>Close</button></div><pre>{JSON.stringify(snapshot.document, null, 2)}</pre></section>}
