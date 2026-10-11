@@ -68,6 +68,10 @@ npm run dev
 ```
 
 Vite forwards /api to localhost:8080; CHANGEGUARD_API_PROXY can override it.
+Browser smoke tests use mocked API responses and do not replace backend
+JWT/isolation tests. Run npx playwright install chromium then npm run test:e2e.
+They cover connect, preview/save, history, snapshots, logout, token expiry and
+mobile overflow.
 Compose uses Nginx to serve the app and forward /api to the backend, keeping
 browser requests same-origin. Production deployment must terminate HTTPS.
 

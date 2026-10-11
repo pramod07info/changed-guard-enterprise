@@ -12,6 +12,7 @@
 - Added signed-token, tenant access, database integrity and upgrade tests.
 - Adapted existing HTTP/service suites to authenticated test identities.
 - Added frontend tests/build workflow and Compose Nginx dashboard service.
+- Added Playwright browser smoke tests with controlled API fixtures.
 - Added dashboard-security.md with provider configuration and connection limitations.
 - Authentication is now required for APIs and metrics; health remains public.
 
