@@ -51,9 +51,13 @@ may reject them. Review flags are advisory.
 
 ## Validation status
 
-The built-in OAuth login phase adds protocol, user authentication, PKCE and
-callback tests. See [authentication setup](docs/dashboard-security.md) for run
-configuration, local seed credentials and deployment limitations.
+Built-in OAuth login verification passed: 56 backend tests against PostgreSQL,
+8 frontend unit tests, 2 browser smoke tests, and frontend/backend builds.
+[Backend CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38175230316)
+and [frontend CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38175230334).
+Browser smoke tests use OAuth/API fixtures; backend tests perform real database
+login, PKCE exchange and signed-token API access. Docker Compose runtime has
+not been exercised here. See [authentication setup](docs/dashboard-security.md).
 
 ## Planned stack
 

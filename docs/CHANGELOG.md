@@ -1,4 +1,6 @@
-# Built-in OAuth 2 login
+# Implementation changelog
+
+## 2026-10-12 — Built-in OAuth 2 login
 
 - Replaced external identity-provider configuration and token-paste UI with an
   embedded Spring Security authorization server and public PKCE browser client.
@@ -7,7 +9,11 @@
 - Added OAuth protocol/user/callback tests and updated proxies, Compose and CI.
 - Documented setup, profile changes, keys, token lifetime and single-instance limits.
 
-# Implementation changelog
+Verified commit e99b568fc25371ece0c7b4571b25e64aadfe56ae: 56 backend tests
+passed against PostgreSQL, 8 frontend unit tests and 2 browser smoke tests
+passed, with successful frontend/backend builds. Backend CI run 38175230316;
+frontend CI run 38175230334. Browser tests use fixtures; backend OAuth protocol
+tests exercise actual database authentication and signed token validation.
 
 ## 2026-10-11 — Dashboard and tenant authentication
 
