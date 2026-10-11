@@ -10,7 +10,7 @@ suggests tests; it must not override compatibility rules or deploy changes.
 | AI agents | Spring AI; LangChain4j alternative | Planned; choose one after compatibility validation |
 | Frontend | React, TypeScript | Planned |
 | Messaging | Apache Kafka | Planned asynchronous analysis jobs |
-| Database | PostgreSQL, pgvector | Planned reports, audit, tenants and retrieval |
+| Database | PostgreSQL, pgvector | PostgreSQL snapshot/report history implemented; audit, tenants and pgvector planned |
 | Dependency analysis | JavaParser, Neo4j | Planned source extraction and persisted graph |
 | API contracts | OpenAPI, Pact | Bounded OpenAPI 3.0 JSON import implemented; Pact planned |
 | Kafka contracts | Avro, Schema Registry | Planned directional event compatibility |
@@ -19,7 +19,7 @@ suggests tests; it must not override compatibility rules or deploy changes.
 | Observability | OpenTelemetry, Prometheus | Prometheus endpoint supplied; tracing planned |
 
 1. OpenAPI import with directional request/response rules implemented; extend constraints and parameters next.
-2. Persist projects, contract snapshots and analysis reports in PostgreSQL.
+2. Snapshot/report persistence implemented; projects and tenant isolation remain planned.
 3. Build React report UI, authenticate users and enforce tenant boundaries.
 4. Extract Java call dependencies using JavaParser; persist verified edges in Neo4j.
 5. Add idempotent Kafka jobs, retry policies and dead-letter handling.

@@ -7,6 +7,22 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: changeguard
+          POSTGRES_USER: changeguard
+          POSTGRES_PASSWORD: ci-test-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U changeguard -d changeguard"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      CHANGEGUARD_DB_URL: jdbc:postgresql://localhost:5432/changeguard
+      CHANGEGUARD_DB_USER: changeguard
+      CHANGEGUARD_DB_PASSWORD: ci-test-only
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4

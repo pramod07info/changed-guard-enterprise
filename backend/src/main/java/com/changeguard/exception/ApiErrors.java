@@ -9,6 +9,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @RestControllerAdvice
 public class ApiErrors {
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ProblemDetail> missing(ResourceNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage()));
+    }
+
     @ExceptionHandler(InvalidContractException.class)
     public ResponseEntity<ProblemDetail> invalid(InvalidContractException exception) {
         return ResponseEntity.badRequest().body(

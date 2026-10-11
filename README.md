@@ -12,9 +12,14 @@ pramod07info/ChangeGuard.
 - OpenAPI 3.0 JSON import with nested schemas, local references and directional request/response checks.
 - Unit and HTTP tests, Docker build and local Compose entry point.
 
-No AI inference, persistence or external integrations run in this first slice.
+PostgreSQL now stores contract snapshots and analysis history through new endpoints.
+AI inference and external repository integrations remain planned.
 
 ## Run with Java 21 and Maven 3.9+
+
+First set CHANGEGUARD_DB_PASSWORD and start PostgreSQL with
+docker compose up -d postgres from repository root.
+See [persistence setup](docs/persistence.md) for environment variables and endpoints.
 
 ```sh
 cd backend
@@ -23,7 +28,7 @@ mvn spring-boot:run
 ```
 
 Or from repository root: `docker compose up --build`.
-The Docker build runs tests before packaging.
+The Docker build skips database tests; GitHub CI runs them against PostgreSQL.
 From repository root in another terminal:
 
 ```sh

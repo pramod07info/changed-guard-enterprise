@@ -9,8 +9,8 @@ ChangeGuardApplication in that base package.
 | service | Compatibility rules, import validation and dependency traversal | ImpactService, OpenApiService, DependencyGraphService |
 | dto | Immutable API request and report records | ImpactRequest, ImpactReport, OpenApiRequest, OpenApiReport |
 | exception | Expected failure types and central HTTP error translation | InvalidContractException, ApiErrors |
-| repository | Persistence access when database support is implemented | Not yet needed: analysis is stateless |
-| entity | Persistent models when database support is implemented | Not yet needed |
+| repository | Bound-parameter JDBC queries and inserts | AnalysisRepository, ContractSnapshotRepository |
+| entity | JDBC persistence models | AnalysisRecord, ContractSnapshot |
 | utility | Stateless reusable helpers that do not belong to a service | Not yet needed |
 | config | Explicit infrastructure configuration when needed | Currently uses Boot configuration and application.yml |
 
@@ -27,7 +27,7 @@ ChangeGuardApplication in that base package.
 - Keep schema-import helpers private to OpenApiService until another component actually
   needs them. Avoid an unrelated utility collection.
 - Do not create placeholder repositories or entities before database implementation.
-  PostgreSQL persistence will add repository and entity packages with real implementations.
+  PostgreSQL history now uses concrete repository and entity packages.
 
 ## Tests and future changes
 
@@ -39,4 +39,8 @@ versioned change is documented, and add focused behavior tests. Update
 docs/CHANGELOG.md for each implementation change and docs/architecture.md when
 technology or implementation status changes.
 
-No database, authentication or tenant isolation is added by this refactor.
+AnalysisHistoryController delegates history endpoints to AnalysisHistoryService.
+The history service owns transactions and JSON serialization; repositories
+handle SQL. ResourceNotFoundException maps missing rows to HTTP 404.
+See persistence.md for PostgreSQL setup. Authentication and tenant isolation
+remain planned.

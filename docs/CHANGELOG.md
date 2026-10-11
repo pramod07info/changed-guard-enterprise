@@ -1,5 +1,19 @@
 # Implementation changelog
 
+## 2026-10-11 — PostgreSQL snapshot and analysis history
+
+- Added entity and repository packages with JDBC snapshot/report models and queries.
+- Added Flyway V1 schema with JSONB documents, foreign keys and service history index.
+- Added AnalysisHistoryService with transactional save of two snapshots, dependencies and report.
+- Added save/read/history/snapshot endpoints under /api/v1 and centralized HTTP 404 handling.
+- Kept original analysis endpoints free of history writes.
+- Added PostgreSQL Compose service, volume, health checks and environment configuration.
+- Added PostgreSQL-backed repository/service/controller tests and CI database service.
+- Docker packaging skips database tests; CI performs Maven verify against PostgreSQL.
+- Added persistence.md and updated architecture documentation.
+
+Validation command: backend Maven verify with a dedicated PostgreSQL database.
+
 ## 2026-10-11 — Layered backend refactor
 
 - Replaced the mixed com.changeguard.impact package with controller, service,

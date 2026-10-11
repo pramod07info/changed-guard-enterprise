@@ -1,5 +1,29 @@
 services:
   backend:
     build: ./backend
+    environment:
+      CHANGEGUARD_DB_URL: jdbc:postgresql://postgres:5432/changeguard
+      CHANGEGUARD_DB_USER: changeguard
+      CHANGEGUARD_DB_PASSWORD: ${CHANGEGUARD_DB_PASSWORD:?Set CHANGEGUARD_DB_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - "127.0.0.1:8080:8080"
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: changeguard
+      POSTGRES_USER: changeguard
+      POSTGRES_PASSWORD: ${CHANGEGUARD_DB_PASSWORD:?Set CHANGEGUARD_DB_PASSWORD}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U changeguard -d changeguard"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+volumes:
+  postgres-data:

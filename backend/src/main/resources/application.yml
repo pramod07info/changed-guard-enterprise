@@ -1,6 +1,12 @@
 spring:
   application:
     name: changeguard-backend
+  datasource:
+    url: ${CHANGEGUARD_DB_URL:jdbc:postgresql://localhost:5432/changeguard}
+    username: ${CHANGEGUARD_DB_USER:changeguard}
+    password: ${CHANGEGUARD_DB_PASSWORD}
+  flyway:
+    enabled: true
 server:
   address: 127.0.0.1
   port: 8080
