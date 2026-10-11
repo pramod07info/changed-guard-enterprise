@@ -8,7 +8,7 @@ suggests tests; it must not override compatibility rules or deploy changes.
 | --- | --- | --- |
 | Backend | Java 21, Spring Boot | First impact API implemented |
 | AI agents | Spring AI; LangChain4j alternative | Planned; choose one after compatibility validation |
-| Frontend | React, TypeScript | Planned |
+| Frontend | React, TypeScript | Dashboard, analysis/history/snapshot views implemented |
 | Messaging | Apache Kafka | Planned asynchronous analysis jobs |
 | Database | PostgreSQL, pgvector | PostgreSQL snapshot/report history implemented; audit, tenants and pgvector planned |
 | Dependency analysis | JavaParser, Neo4j | Planned source extraction and persisted graph |
@@ -20,7 +20,7 @@ suggests tests; it must not override compatibility rules or deploy changes.
 
 1. OpenAPI import with directional request/response rules implemented; extend constraints and parameters next.
 2. Snapshot/report persistence implemented; projects and tenant isolation remain planned.
-3. Build React report UI, authenticate users and enforce tenant boundaries.
+3. React UI, JWT authentication and tenant-scoped persistence implemented; OIDC sign-in and RBAC planned.
 4. Extract Java call dependencies using JavaParser; persist verified edges in Neo4j.
 5. Add idempotent Kafka jobs, retry policies and dead-letter handling.
 6. Add Pact and Avro compatibility checks with contract registry adapters.

@@ -10,6 +10,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import com.changeguard.dto.OpenApiRequest;
+import com.changeguard.security.WithTenant;
 import com.changeguard.entity.AnalysisRecord;
 import com.changeguard.exception.InvalidContractException;
 import com.changeguard.exception.ResourceNotFoundException;
@@ -21,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 
 @SpringBootTest
+@WithTenant
 class AnalysisHistoryServiceTest {
     @Autowired AnalysisHistoryService history;
     @Autowired JdbcTemplate jdbc;

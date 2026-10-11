@@ -1,5 +1,20 @@
 # Implementation changelog
 
+## 2026-10-11 — Dashboard and tenant authentication
+
+- Added React/TypeScript dashboard with contract input, preview/save, findings,
+  history pagination and snapshot views.
+- Added JWT resource-server authentication, explicit issuer/audience/expiry/tenant
+  requirements and a verified workspace identity endpoint.
+- Added tenant context to history services and mandatory tenant-scoped repositories.
+- Added V2 migration to quarantine unowned history and enforce cross-tenant snapshot
+  foreign keys. Existing records remain retained but require verified ownership migration.
+- Added signed-token, tenant access, database integrity and upgrade tests.
+- Adapted existing HTTP/service suites to authenticated test identities.
+- Added frontend tests/build workflow and Compose Nginx dashboard service.
+- Added dashboard-security.md with provider configuration and connection limitations.
+- Authentication is now required for APIs and metrics; health remains public.
+
 ## 2026-10-11 — PostgreSQL snapshot and analysis history
 
 - Added entity and repository packages with JDBC snapshot/report models and queries.

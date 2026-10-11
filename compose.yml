@@ -1,9 +1,18 @@
 services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "127.0.0.1:3000:80"
+    depends_on:
+      - backend
   backend:
     build: ./backend
     environment:
       CHANGEGUARD_DB_URL: jdbc:postgresql://postgres:5432/changeguard
       CHANGEGUARD_DB_USER: changeguard
+      CHANGEGUARD_JWT_ISSUER: ${CHANGEGUARD_JWT_ISSUER:?Set JWT issuer}
+      CHANGEGUARD_JWKS_URI: ${CHANGEGUARD_JWKS_URI:?Set trusted JWKS URI}
+      CHANGEGUARD_JWT_AUDIENCE: ${CHANGEGUARD_JWT_AUDIENCE:?Set API audience}
       CHANGEGUARD_DB_PASSWORD: ${CHANGEGUARD_DB_PASSWORD:?Set CHANGEGUARD_DB_PASSWORD}
     depends_on:
       postgres:

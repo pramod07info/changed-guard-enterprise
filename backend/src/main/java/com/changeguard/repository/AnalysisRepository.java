@@ -14,11 +14,11 @@ import com.changeguard.entity.AnalysisRecord;
 public class AnalysisRepository {
     private final JdbcTemplate jdbc;
     private static final String SELECT = """
-            SELECT id, service, created_at, before_snapshot_id, after_snapshot_id,
+            SELECT id, tenant_id, service, created_at, before_snapshot_id, after_snapshot_id,
                 report::text, dependencies::text FROM analysis_report
             """;
     private static final RowMapper<AnalysisRecord> MAPPER = (rs, row) -> new AnalysisRecord(
-            rs.getObject("id", UUID.class), rs.getString("service"),
+            rs.getObject("id", UUID.class), rs.getString("tenant_id"), rs.getString("service"),
             rs.getObject("created_at", OffsetDateTime.class).toInstant(),
             rs.getObject("before_snapshot_id", UUID.class), rs.getObject("after_snapshot_id", UUID.class),
             rs.getString("report"), rs.getString("dependencies"));
@@ -27,16 +27,16 @@ public class AnalysisRepository {
     public void insert(AnalysisRecord record) {
         jdbc.update("""
                 INSERT INTO analysis_report
-                  (id, service, created_at, before_snapshot_id, after_snapshot_id, report, dependencies)
-                VALUES (?, ?, ?, ?, ?, CAST(? AS jsonb), CAST(? AS jsonb))
-                """, record.id(), record.service(), OffsetDateTime.ofInstant(record.createdAt(), ZoneOffset.UTC),
+                  (id, tenant_id, service, created_at, before_snapshot_id, after_snapshot_id, report, dependencies)
+                VALUES (?, ?, ?, ?, ?, ?, CAST(? AS jsonb), CAST(? AS jsonb))
+                """, record.id(), record.tenantId(), record.service(), OffsetDateTime.ofInstant(record.createdAt(), ZoneOffset.UTC),
                 record.beforeSnapshotId(), record.afterSnapshotId(), record.reportJson(), record.dependenciesJson());
     }
-    public Optional<AnalysisRecord> findById(UUID id) {
-        return jdbc.query(SELECT + " WHERE id = ?", MAPPER, id).stream().findFirst();
+    public Optional<AnalysisRecord> findById(String tenantId, UUID id) {
+        return jdbc.query(SELECT + " WHERE tenant_id = ? AND id = ?", MAPPER, tenantId, id).stream().findFirst();
     }
-    public List<AnalysisRecord> findByService(String service, int limit, int offset) {
-        return jdbc.query(SELECT + " WHERE service = ? ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?",
-                MAPPER, service, limit, offset);
+    public List<AnalysisRecord> findByService(String tenantId, String service, int limit, int offset) {
+        return jdbc.query(SELECT + " WHERE tenant_id = ? AND service = ? ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?",
+                MAPPER, tenantId, service, limit, offset);
     }
 }

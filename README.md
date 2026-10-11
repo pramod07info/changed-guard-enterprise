@@ -6,6 +6,9 @@ pramod07info/ChangeGuard.
 
 ## Implemented
 
+- React/TypeScript dashboard for contract analysis, saved history and snapshots.
+- Verified JWT authentication and tenant-scoped persistence access.
+
 - Normalized response contract comparison: endpoint removal, field removal, type changes.
 - Cycle-safe dependency traversal with potential consumers and shortest impact paths.
 - REST API, structured HTTP 400 errors, Actuator health and Prometheus metrics.
@@ -17,7 +20,8 @@ AI inference and external repository integrations remain planned.
 
 ## Run with Java 21 and Maven 3.9+
 
-First set CHANGEGUARD_DB_PASSWORD and start PostgreSQL with
+First set CHANGEGUARD_DB_PASSWORD plus JWT issuer/JWKS/audience variables
+described in [dashboard and security setup](docs/dashboard-security.md), then start PostgreSQL with
 docker compose up -d postgres from repository root.
 See [persistence setup](docs/persistence.md) for environment variables and endpoints.
 
@@ -28,6 +32,7 @@ mvn spring-boot:run
 ```
 
 Or from repository root: `docker compose up --build`.
+Open http://localhost:3000 and connect with a trusted identity-provider access token.
 The Docker build skips database tests; GitHub CI runs them against PostgreSQL.
 From repository root in another terminal:
 
@@ -60,6 +65,6 @@ The Docker image build has not been executed.
 See [architecture](docs/architecture.md) for implementation status and sequence.
 See [backend package conventions](docs/backend-architecture.md) and
 [implementation changelog](docs/CHANGELOG.md) for code organization and changes.
-The local API has no authentication or tenant isolation and is bound to
-localhost. Production deployment requires authentication, limits, audit and
-tenant isolation. No AWS or Kubernetes resources are provisioned.
+The local API uses JWT authentication and tenant query isolation and is bound
+to localhost. Production deployment still needs HTTPS, limits, audit, RBAC and
+identity lifecycle integration. No AWS or Kubernetes resources are provisioned.

@@ -15,3 +15,8 @@ management:
     web:
       exposure:
         include: health,info,prometheus
+changeguard:
+  security:
+    issuer: ${CHANGEGUARD_JWT_ISSUER}
+    jwks-uri: ${CHANGEGUARD_JWKS_URI}
+    audience: ${CHANGEGUARD_JWT_AUDIENCE}

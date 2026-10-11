@@ -6,18 +6,21 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.annotation.Import;
+import com.changeguard.security.TestJwtConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import(TestJwtConfiguration.class)
 class ImpactHttpTest {
     @LocalServerPort int port;
 
     private HttpResponse<String> post(String body) throws Exception {
         return HttpClient.newHttpClient().send(
                 HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + "/api/v1/impact"))
-                .header("Content-Type", "application/json")
+                .header("Authorization", "Bearer test-token").header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(body)).build(),
                 HttpResponse.BodyHandlers.ofString());
     }
@@ -49,11 +52,11 @@ class ImpactHttpTest {
                 """;
         var client = HttpClient.newHttpClient();
         var uri = URI.create("http://127.0.0.1:" + port + "/api/v1/impact/openapi");
-        var response = client.send(HttpRequest.newBuilder(uri).header("Content-Type", "application/json")
+        var response = client.send(HttpRequest.newBuilder(uri).header("Authorization", "Bearer test-token").header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(body)).build(), HttpResponse.BodyHandlers.ofString());
         assertEquals(200, response.statusCode());
         assertTrue(response.body().contains("OPERATION_REMOVED"));
-        var invalid = client.send(HttpRequest.newBuilder(uri).header("Content-Type", "application/json")
+        var invalid = client.send(HttpRequest.newBuilder(uri).header("Authorization", "Bearer test-token").header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(body.replace("3.0.3", "3.1.0"))).build(),
                 HttpResponse.BodyHandlers.ofString());
         assertEquals(400, invalid.statusCode());

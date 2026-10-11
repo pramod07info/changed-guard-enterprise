@@ -23,7 +23,8 @@ For Maven development, first run docker compose up -d postgres, then run
 mvn verify and mvn spring-boot:run from backend. Set CHANGEGUARD_DB_PASSWORD
 in the shell as well: Maven does not read the Compose .env file.
 Optional variables: CHANGEGUARD_DB_URL and CHANGEGUARD_DB_USER.
-Application startup now requires a reachable PostgreSQL database.
+Application startup now requires a reachable PostgreSQL database and JWT
+issuer/JWKS/audience configuration; see dashboard-security.md.
 
 ## Endpoints
 
@@ -55,6 +56,6 @@ Docker packages the app with tests skipped because image builds do not have
 a database. Database tests run separately in CI. Container runtime itself
 has not been verified in the authoring environment.
 
-No authentication, tenant isolation, retention policy or snapshot-redaction
-policy exists yet. Keep the development API local. pgvector and AI retrieval
+JWT authentication and tenant query isolation are implemented in phase 4.
+Retention and snapshot-redaction policies remain planned. pgvector and AI retrieval
 are planned and are not needed for report history.

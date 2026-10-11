@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.annotation.Import;
+import com.changeguard.security.TestJwtConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -20,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import(TestJwtConfiguration.class)
 class AnalysisHistoryHttpTest {
     @LocalServerPort int port;
     @Autowired JsonMapper json;
@@ -28,7 +31,7 @@ class AnalysisHistoryHttpTest {
     private final HttpClient client = HttpClient.newHttpClient();
     private URI uri(String path) { return URI.create("http://127.0.0.1:" + port + "/api/v1" + path); }
     private HttpResponse<String> get(String path) throws Exception {
-        return client.send(HttpRequest.newBuilder(uri(path)).GET().build(), HttpResponse.BodyHandlers.ofString());
+        return client.send(HttpRequest.newBuilder(uri(path)).header("Authorization", "Bearer test-token").GET().build(), HttpResponse.BodyHandlers.ofString());
     }
     @AfterEach void cleanup() {
         jdbc.update("DELETE FROM analysis_report WHERE service = ?", service);
@@ -37,7 +40,7 @@ class AnalysisHistoryHttpTest {
     @Test void createdLocationAndReadEndpoints() throws Exception {
         var document = Map.<String, Object>of("openapi", "3.0.3", "paths", Map.of());
         String body = json.writeValueAsString(new OpenApiRequest(service, document, document, null));
-        var created = client.send(HttpRequest.newBuilder(uri("/analyses")).header("Content-Type", "application/json")
+        var created = client.send(HttpRequest.newBuilder(uri("/analyses")).header("Authorization", "Bearer test-token").header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(body)).build(), HttpResponse.BodyHandlers.ofString());
         assertEquals(201, created.statusCode());
         var saved = json.readValue(created.body(), SavedAnalysis.class);

@@ -12,7 +12,8 @@ ChangeGuardApplication in that base package.
 | repository | Bound-parameter JDBC queries and inserts | AnalysisRepository, ContractSnapshotRepository |
 | entity | JDBC persistence models | AnalysisRecord, ContractSnapshot |
 | utility | Stateless reusable helpers that do not belong to a service | Not yet needed |
-| config | Explicit infrastructure configuration when needed | Currently uses Boot configuration and application.yml |
+| config | Infrastructure configuration | SecurityConfig, application.yml |
+| security | Verified identity/tenant rules | TenantContext, RequiredJwtClaimsValidator |
 
 ## Dependency rules
 
@@ -42,5 +43,6 @@ technology or implementation status changes.
 AnalysisHistoryController delegates history endpoints to AnalysisHistoryService.
 The history service owns transactions and JSON serialization; repositories
 handle SQL. ResourceNotFoundException maps missing rows to HTTP 404.
-See persistence.md for PostgreSQL setup. Authentication and tenant isolation
-remain planned.
+See persistence.md for PostgreSQL setup and dashboard-security.md for identity
+configuration. History services require a verified tenant; repositories always
+filter by tenant. JWT authentication and tenant-scoped access are implemented.

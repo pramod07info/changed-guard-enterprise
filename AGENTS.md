@@ -16,3 +16,9 @@
   when boundaries or implementation status change.
 - Keep credentials out of source and preserve existing API behavior unless
   a deliberate versioned change is documented.
+
+- Resolve tenant IDs from verified JWT claims, never request fields or headers.
+- Require tenant filters on every history/snapshot repository read and enforce cross-tenant foreign keys.
+- Never enable production test-token decoders or anonymous API bypasses.
+- Frontend components live in frontend/src/components; transport/input helpers in frontend/src/lib.
+- Run frontend npm test and npm run build for dashboard changes.
