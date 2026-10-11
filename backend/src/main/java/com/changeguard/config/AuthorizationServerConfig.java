@@ -47,7 +47,8 @@ import org.springframework.security.web.authentication.LoginUrlAuthenticationEnt
 public class AuthorizationServerConfig {
     @Bean @Order(1)
     SecurityFilterChain authorizationSecurity(HttpSecurity http) throws Exception {
-        return http.cors(Customizer.withDefaults()).oauth2AuthorizationServer(Customizer.withDefaults())
+        return http.securityMatcher("/oauth2/**", "/.well-known/oauth-authorization-server")
+                .cors(Customizer.withDefaults()).oauth2AuthorizationServer(Customizer.withDefaults())
                 .authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
                 .exceptionHandling(errors -> errors.authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/login")))
                 .build();
@@ -84,6 +85,10 @@ public class AuthorizationServerConfig {
     }
 
     @Bean RSAKey signingKey(Environment env, @Value("${changeguard.auth.signing-jwk:}") String configured) throws Exception {
+        var profiles = Arrays.asList(env.getActiveProfiles());
+        if (profiles.contains("local") && !profiles.equals(List.of("local"))) {
+            throw new IllegalStateException("The demo local profile cannot be combined with other profiles");
+        }
         if (!configured.isBlank()) {
             var key = RSAKey.parse(configured);
             if (!key.isPrivate() || key.size() < 2048 || key.getKeyID() == null) {

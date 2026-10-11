@@ -34,6 +34,9 @@ mvn spring-boot:run
 
 Alternatively set the environment profile in your terminal before these commands.
 PowerShell: `$env:SPRING_PROFILES_ACTIVE="local"`.
+For a Vite frontend on port 5173, set `CHANGEGUARD_FRONTEND_URL=http://localhost:5173`
+in the backend environment so logout returns to the development frontend.
+Run `npm ci` and `npm run dev` from `frontend`.
 For all services: `docker compose up --build`, then open http://localhost:3000.
 The Compose file enables the local profile explicitly. Keycloak can be stopped;
 no service on port 8180 is needed.
