@@ -46,6 +46,9 @@ may reject them. Review flags are advisory.
 
 ## Validation status
 
+The PostgreSQL history phase passed 39 tests in
+[Java 21/PostgreSQL CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38141417435).
+
 Java 21, Maven and Docker were unavailable in the authoring environment.
 GitHub Actions successfully ran Java 21 Maven verify for foundation commit
 `985948f761e7a514e37f7913469ce4f405d1058c`:

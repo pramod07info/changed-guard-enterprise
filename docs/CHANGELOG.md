@@ -13,6 +13,8 @@
 - Added persistence.md and updated architecture documentation.
 
 Validation command: backend Maven verify with a dedicated PostgreSQL database.
+Verified 39 tests with zero failures, errors or skipped tests against PostgreSQL:
+https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38141417435
 
 ## 2026-10-11 — Layered backend refactor
 
