@@ -40,8 +40,10 @@ may reject them. Review flags are advisory.
 ## Validation status
 
 Java 21, Maven and Docker were unavailable in the authoring environment.
-The Java tests and container build have not been executed there. Run
-`mvn verify` or the Docker build before relying on this foundation.
+GitHub Actions successfully ran Java 21 Maven verify for foundation commit
+`985948f761e7a514e37f7913469ce4f405d1058c`:
+https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38138773579
+The Docker image build has not been executed.
 
 ## Planned stack
 
