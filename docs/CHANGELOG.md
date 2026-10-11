@@ -18,7 +18,8 @@
   this refactor introduces no persistence or placeholder abstractions.
 - REST routes and report structure remain unchanged.
 
-Validation: Java 21 Maven verify will run through the existing GitHub CI workflow.
+Validation: run Java 21 Maven verify from backend. The existing GitHub CI
+workflow executes this command on each push and pull request.
 
 ## 2026-10-11 — OpenAPI contract import
 
