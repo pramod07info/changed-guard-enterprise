@@ -1,0 +1,6 @@
+{
+  "service": "payments",
+  "before": {"GET /payments/{id}": {"id": "string", "amount": "number"}},
+  "after": {"GET /payments/{id}": {"id": "string"}},
+  "dependencies": {"orders": ["payments"], "checkout": ["orders"], "notifications": ["orders"]}
+}
