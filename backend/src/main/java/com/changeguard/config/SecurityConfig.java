@@ -18,6 +18,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/actuator/health", "/api/v1/auth/config").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/github/webhooks/*/deliveries").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(resource -> resource.jwt(Customizer.withDefaults()))
                 .build();

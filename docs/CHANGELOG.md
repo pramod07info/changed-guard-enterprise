@@ -127,3 +127,17 @@ workflow executes this command on each push and pull request.
 - Added REST API, central input error handling, health and Prometheus endpoints.
 - Added Maven tests, Docker/Compose configuration and Java 21 GitHub CI.
 - Documented the complete target stack and phased delivery sequence.
+
+## GitHub signed webhooks and durable automatic PR analysis
+
+- Added tenant-authenticated immutable baseline/path webhook registrations and lists.
+- Added bounded raw-body HMAC-SHA256 delivery authentication; all other APIs retain
+  bearer authentication and tenant-scoped reads.
+- Added Flyway V7 durable subscription/delivery tables, tenant foreign keys,
+  per-delivery idempotency and delivery-ID collision detection.
+- Added PostgreSQL queue polling, reclaimable ownership leases, three-attempt retries,
+  stale-head rejection and atomic history/completion persistence.
+- Added tenant-protected delivery status and safe terminal error codes.
+- Added layer-organized tests and `docs/github-webhooks.md` setup/operational guide.
+- Preserved manual public-PR comparison. This phase does not publish GitHub checks,
+  change branch protection, support private repos or introduce a webhook UI.
