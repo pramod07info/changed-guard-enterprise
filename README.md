@@ -14,6 +14,7 @@ pramod07info/ChangeGuard.
 - Mobile-friendly webhook registration/setup, recent deliveries, publication status/retry and saved-report dashboard.
 - Opt-in GitHub App checks on exact commit SHAs, a separate publication queue and tenant-protected status/retry APIs.
 
+- Normalized PostgreSQL schema comparison with risk findings, saved evidence/history and a mobile dashboard.
 - Normalized response contract comparison: endpoint removal, field removal, type changes.
 - Cycle-safe dependency traversal with potential consumers and shortest impact paths.
 - REST API, structured HTTP 400 errors, Actuator health and Prometheus metrics.
@@ -78,6 +79,8 @@ and required-check setup. App writes are disabled by default. Private repository
 access and automatic merge-rule configuration remain unimplemented.
 
 See [webhook dashboard](docs/webhook-dashboard.md) for UI registration, setup and delivery/check status.
+
+See [database schema analysis](docs/database-schema-analysis.md) for the PostgreSQL snapshot format and current scope.
 
 See [architecture](docs/architecture.md) for implementation status and sequence.
 See [backend package conventions](docs/backend-architecture.md) and

@@ -1,0 +1,29 @@
+{
+  "service": "payments",
+  "before": {
+    "dialect": "postgresql",
+    "tables": {
+      "public.payments": {
+        "columns": {
+          "id": { "type": "uuid", "nullable": false },
+          "amount": { "type": "numeric", "nullable": false, "precision": 10, "scale": 2 },
+          "reference": { "type": "varchar", "nullable": true, "length": 100 }
+        },
+        "primaryKey": ["id"]
+      }
+    }
+  },
+  "after": {
+    "dialect": "postgresql",
+    "tables": {
+      "public.payments": {
+        "columns": {
+          "id": { "type": "uuid", "nullable": false },
+          "amount": { "type": "numeric", "nullable": false, "precision": 8, "scale": 2 }
+        },
+        "primaryKey": ["id"]
+      }
+    }
+  },
+  "dependencies": { "orders": ["payments"], "checkout": ["orders"] }
+}

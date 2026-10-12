@@ -20,3 +20,6 @@ export type GitHubPrPreview = { baselineId: string; source: GitHubSource; report
 export type WebhookSubscription = { id: string; baselineId: string; repository: string; contractPath: string; deliveryPath: string };
 export type CheckPublication = { state: 'QUEUED' | 'PROCESSING' | 'PUBLISHED' | 'FAILED'; attempts: number; checkRunId: number | null; checkName: string; errorCode: string | null };
 export type WebhookDelivery = { deliveryId: string; state: 'QUEUED' | 'PROCESSING' | 'SUCCEEDED' | 'SUPERSEDED' | 'FAILED'; attempts: number; analysisId: string | null; errorCode: string | null; pullNumber: number; headSha: string; createdAt: string; check: CheckPublication | null };
+export type DatabaseSchemaInput = AnalysisInput;
+export type DatabaseSchemaReport = { service: string; risk: Report['risk']; requiresReview: boolean; changes: { code: string; table: string; location: string; explanation: string; severity: Report['risk'] }[]; potentialConsumers: Report['potentialConsumers']; recommendedTests: string[]; limitations: string[] };
+export type SavedDatabaseAnalysis = { id: string; service: string; createdAt: string; report: DatabaseSchemaReport; before: JsonObject; after: JsonObject; dependencies: Record<string, string[]> };

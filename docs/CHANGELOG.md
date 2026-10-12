@@ -166,3 +166,15 @@ workflow executes this command on each push and pull request.
 - Added frontend helper/browser tests and backend pagination/tenant/join coverage.
 - Documented mobile/session behavior, fixture verification and the remaining operator
   setup in `webhook-dashboard.md`; credentials and App approval remain outside the UI.
+
+## Normalized PostgreSQL schema analysis
+
+- Added bounded snapshot validation and deterministic table/column/type/capacity,
+  nullability/default-presence and primary/unique/foreign-key comparison rules.
+- Added potential-consumer paths and suggested validation from supplied graphs.
+- Added authenticated preview/save/detail/history APIs and Flyway V9 tenant-isolated
+  schema evidence/report persistence, separate from OpenAPI history and GitHub checks.
+- Added a responsive database dashboard with previews, findings, saved evidence and
+  paginated history; credentials and SQL execution are not introduced.
+- Added controller/service/repository and frontend helper/browser tests, sample JSON,
+  and `database-schema-analysis.md` documenting the bounded subset and remaining work.

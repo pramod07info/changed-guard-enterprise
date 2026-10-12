@@ -141,3 +141,24 @@ HTTP to the existing session-aware executor. `lib/webhooks` owns input/URL valid
 and publication transports remain in `types.ts`. Selection epochs discard late results
 and errors; current 401s use the existing sign-out/clear behavior. See
 `webhook-dashboard.md` for setup and read/retry actions.
+
+## Database schema comparison boundary
+
+`DatabaseSchemaController` caps raw JSON transport and delegates preview to
+`DatabaseSchemaService` and history to `DatabaseAnalysisHistoryService`. The comparison
+service validates normalized metadata into private records and owns compatibility
+rules; it reuses `DependencyGraphService` for potential paths. It never generates SQL
+or opens customer DB connections. `CatalogInput` supplies shared identifier/page rules.
+
+`DatabaseAnalysisRepository` owns tenant-bound V9 inserts, detail reads and lightweight
+summary projections. `DatabaseAnalysisRecord` is the persistence model; request/report
+and saved-evidence records live in `dto`. The history service owns the save transaction
+and serialization, resolving tenant identity only from the verified JWT context.
+Schema reports and supplied evidence are separate from OpenAPI baselines/history;
+GitHub App check policy remains OpenAPI-only.
+
+Frontend `DatabasePanel` holds its independent report/history state and uses the shared
+session-aware executor. `lib/database` validates transport bounds and supplies an example;
+`parseJsonObject` in `lib/input` is the shared concrete JSON object validator. Tests follow
+controller/service/repository and frontend lib/browser boundaries. See
+`database-schema-analysis.md` for format, rules, bounds and current limitations.
