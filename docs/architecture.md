@@ -13,6 +13,7 @@ suggests tests; it must not override compatibility rules or deploy changes.
 | Database | PostgreSQL, pgvector | Tenant-scoped history, users, projects, services and baselines implemented; audit and pgvector planned |
 | Dependency analysis | JavaParser, Neo4j | Planned source extraction and persisted graph |
 | API contracts | OpenAPI, Pact | Bounded OpenAPI 3.0 JSON import implemented; Pact planned |
+| Database schemas | Normalized PostgreSQL JSON | Bounded comparison, risk findings, evidence/history and dashboard implemented; SQL parsing/introspection and DB PR checks planned |
 | Kafka contracts | Avro, Schema Registry | Planned directional event compatibility |
 | Integrations | GitHub, GitLab, Jenkins | Public PR comparison, signed webhooks, durable analysis/publication queues and opt-in App check writes implemented; private access, GitLab and Jenkins planned |
 | Infrastructure | Docker, Kubernetes, AWS | Docker build supplied; Kubernetes/AWS planned |

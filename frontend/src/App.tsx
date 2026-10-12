@@ -6,6 +6,7 @@ import { AnalysisForm } from './components/AnalysisForm';
 import { ReportPanel } from './components/ReportPanel';
 import { HistoryPanel } from './components/HistoryPanel';
 import { CatalogPanel } from './components/CatalogPanel';
+import { DatabasePanel } from './components/DatabasePanel';
 import type { AnalysisInput, Report, SavedAnalysis, Session, Snapshot, Summary } from './types';
 
 export default function App() {
@@ -81,6 +82,7 @@ export default function App() {
           setReport(result); setSaved(persisted); setSnapshot(null); setHistory([]); setPage({ service: '', offset: 0 });
           setNotice(persisted ? 'Baseline comparison and evidence saved.' : 'Baseline preview complete. This report has not been saved.');
         }}/>
+        <DatabasePanel token={connection.token} busy={busy} fail={setError} execute={run}/>
         <AnalysisForm submit={analyze} busy={busy} fail={setError}/>
         <ReportPanel report={report} saved={saved} busy={busy} snapshot={id => void run(() => api<Snapshot>('/snapshots/' + id, connection.token), setSnapshot)}/>
         {snapshot && <section className="card"><div className="section-heading"><h2>Contract snapshot</h2><button className="quiet" onClick={() => setSnapshot(null)}>Close</button></div><pre>{JSON.stringify(snapshot.document, null, 2)}</pre></section>}
