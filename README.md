@@ -6,6 +6,8 @@ pramod07info/ChangeGuard.
 
 ## Implemented
 
+- Deployment feature flags for all implemented modules, server-enforced gates and a capability-aware dashboard.
+
 - React/TypeScript dashboard for contract analysis, saved history and snapshots.
 - Built-in OAuth 2 authorization server, PostgreSQL users, PKCE dashboard login and tenant-scoped persistence.
 - Project/service catalog, immutable versioned baselines and baseline-linked comparison evidence.
@@ -23,6 +25,9 @@ pramod07info/ChangeGuard.
 
 PostgreSQL now stores contract snapshots and analysis history through new endpoints.
 AI inference, private repository access, GitLab and Jenkins integrations remain planned.
+
+See [feature flag configuration](docs/feature-flags.md) for environment variables,
+preview-only mode, dependencies and restart behavior.
 
 ## Run with Java 21 and Maven 3.9+
 

@@ -1,3 +1,4 @@
+import type { Features } from '../lib/features';
 import { useState } from 'react';
 import { api } from '../lib/api';
 import { parseInput } from '../lib/input';
@@ -6,14 +7,14 @@ import { GitHubPrPanel } from './GitHubPrPanel';
 import { WebhookPanel } from './WebhookPanel';
 import type { Baseline, BaselineSummary, CatalogService, Project, Report, SavedAnalysis } from '../types';
 
-type Props = {
+type Props = { features: Features;
   token: string; busy: boolean; fail: (message: string) => void;
   execute: <T>(task: () => Promise<T>, done: (value: T) => void) => Promise<void>;
   compared: (report: Report, saved: SavedAnalysis | null) => void;
   loaded: (result: SavedAnalysis) => void;
 };
 const pageSize = 20;
-export function CatalogPanel({ token, busy, fail, execute, compared, loaded }: Props) {
+export function CatalogPanel({ features, token, busy, fail, execute, compared, loaded }: Props) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [project, setProject] = useState('');
   const [projectOffset, setProjectOffset] = useState(0);
@@ -56,7 +57,7 @@ export function CatalogPanel({ token, busy, fail, execute, compared, loaded }: P
   function selectService(id: string) {
     const selected = services.find(item => item.id === id) ?? null;
     setService(selected); setBaselines([]); setBaseline(null); setBaselineOffset(0);
-    if (selected) loadBaselines(selected.id, 0);
+    if (selected && features.baselines) loadBaselines(selected.id, 0);
   }
   function publish() {
     if (!service) return;
@@ -71,7 +72,7 @@ export function CatalogPanel({ token, busy, fail, execute, compared, loaded }: P
   function compare(save: boolean) {
     if (!baseline) return;
     try {
-      const input = parseInput(baseline.serviceName, JSON.stringify(baseline.document), after, dependencies);
+      const input = parseInput(baseline.serviceName, JSON.stringify(baseline.document), after, features.dependencyAnalysis ? dependencies : '{}');
       const body = { after: input.after, dependencies: input.dependencies };
       if (save) void execute(() => api<SavedAnalysis>(`/baselines/${baseline.id}/analyses`, token, body), result => compared(result.report, result));
       else void execute(() => api<Report>(`/baselines/${baseline.id}/preview`, token, body), result => compared(result, null));
@@ -110,7 +111,7 @@ export function CatalogPanel({ token, busy, fail, execute, compared, loaded }: P
     </>}
     {service && <>
       <p>Owner: {service.owner}{service.repositoryUrl && <> · Repository: {service.repositoryUrl}</>}</p>
-      <h3>Publish a baseline</h3><form onSubmit={event => { event.preventDefault(); publish(); }}>
+      {features.baselines && <><h3>Publish a baseline</h3><form onSubmit={event => { event.preventDefault(); publish(); }}>
         <label htmlFor="baseline-version">Baseline version</label><input id="baseline-version" maxLength={100} required value={version} onChange={event => setVersion(event.target.value)}/>
         <label htmlFor="baseline-environment">Baseline environment</label><input id="baseline-environment" maxLength={100} required value={environment} onChange={event => setEnvironment(event.target.value)}/>
         <label htmlFor="baseline-document">Baseline contract (OpenAPI 3.0 JSON)</label><textarea id="baseline-document" spellCheck={false} value={document} onChange={event => setDocument(event.target.value)}/>
@@ -122,19 +123,19 @@ export function CatalogPanel({ token, busy, fail, execute, compared, loaded }: P
         <button disabled={busy || baselines.length < pageSize} className="quiet" onClick={() => loadBaselines(service.id, baselineOffset + pageSize)}>Next baselines</button></div>
       <label htmlFor="catalog-baseline">Published baseline</label><select id="catalog-baseline" disabled={busy} value={baseline?.id ?? ''} onChange={event => {
         setBaseline(null); if (event.target.value) void execute(() => api<Baseline>(`/baselines/${event.target.value}`, token), setBaseline);
-      }}><option value="">Select a baseline</option>{baselines.map(item => <option key={item.id} value={item.id}>{item.environment} · {item.version}</option>)}</select>
+      }}><option value="">Select a baseline</option>{baselines.map(item => <option key={item.id} value={item.id}>{item.environment} · {item.version}</option>)}</select></>}
     </>}
     {baseline && <>
       <p>Baseline {baseline.version} · {baseline.environment} · Published by {baseline.publishedBy}</p>
       <label htmlFor="published-contract">Published contract (read only)</label><textarea id="published-contract" readOnly value={JSON.stringify(baseline.document, null, 2)}/>
       <label htmlFor="baseline-candidate">Proposed contract</label><textarea id="baseline-candidate" spellCheck={false} value={after} onChange={event => setAfter(event.target.value)}/>
-      <label htmlFor="baseline-dependencies">Baseline comparison dependencies</label><textarea id="baseline-dependencies" spellCheck={false} value={dependencies} onChange={event => setDependencies(event.target.value)}/>
-      <div className="actions"><button disabled={busy} onClick={() => compare(true)}>Analyze baseline & save</button>
+      {features.dependencyAnalysis && <><label htmlFor="baseline-dependencies">Baseline comparison dependencies</label><textarea id="baseline-dependencies" spellCheck={false} value={dependencies} onChange={event => setDependencies(event.target.value)}/></>}
+      <div className="actions">{features.analysisHistory && <button disabled={busy} onClick={() => compare(true)}>Analyze baseline & save</button>}
         <button disabled={busy} className="secondary" onClick={() => compare(false)}>Preview against baseline</button></div>
-      <WebhookPanel key={'webhook-' + baseline.id} baseline={baseline} repositoryUrl={service?.repositoryUrl ?? null}
-        dependencies={dependencies} token={token} busy={busy} fail={fail} execute={execute} loaded={loaded}/>
-      <GitHubPrPanel key={baseline.id} baseline={baseline} repositoryUrl={service?.repositoryUrl ?? null}
-        dependencies={dependencies} token={token} busy={busy} fail={fail} execute={execute} compared={compared}/>
+      {features.webhooks && <WebhookPanel features={features} key={'webhook-' + baseline.id} baseline={baseline} repositoryUrl={service?.repositoryUrl ?? null}
+        dependencies={features.dependencyAnalysis ? dependencies : '{}'} token={token} busy={busy} fail={fail} execute={execute} loaded={loaded}/>}
+      {features.githubPr && <GitHubPrPanel features={features} key={baseline.id} baseline={baseline} repositoryUrl={service?.repositoryUrl ?? null}
+        dependencies={features.dependencyAnalysis ? dependencies : '{}'} token={token} busy={busy} fail={fail} execute={execute} compared={compared}/>}
     </>}
   </details></section>;
 }

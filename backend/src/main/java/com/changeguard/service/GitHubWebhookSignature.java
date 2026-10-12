@@ -15,6 +15,13 @@ public class GitHubWebhookSignature {
   private final String secret;
   private final boolean enabled;
 
+  @org.springframework.beans.factory.annotation.Autowired
+  public GitHubWebhookSignature(
+      com.changeguard.config.FeatureFlags flags,
+      @Value("${changeguard.github.webhooks.secret:}") String secret) {
+    this(secret, flags.manifest().webhooks());
+  }
+
   public GitHubWebhookSignature(
       @Value("${changeguard.github.webhooks.secret:}") String secret,
       @Value("${changeguard.github.webhooks.enabled:false}") boolean enabled) {

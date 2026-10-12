@@ -1,9 +1,10 @@
+import type { Features } from '../lib/features';
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../lib/api';
 import { checkName, githubCheckUrl, parseWebhookRequest, webhookUrl } from '../lib/webhooks';
 import type { Baseline, CheckPublication, SavedAnalysis, WebhookDelivery, WebhookSubscription } from '../types';
 
-type Props = {
+type Props = { features: Features;
   baseline: Baseline; repositoryUrl: string | null; dependencies: string; token: string; busy: boolean;
   fail: (message: string) => void;
   execute: <T>(task: () => Promise<T>, done: (value: T) => void) => Promise<void>;
@@ -13,7 +14,7 @@ const pageSize = 20;
 const analysisLabels = { QUEUED: 'Analysis queued', PROCESSING: 'Analyzing', SUCCEEDED: 'Analysis saved', SUPERSEDED: 'Newer commit detected', FAILED: 'Analysis failed' };
 const checkLabels = { QUEUED: 'Check queued', PROCESSING: 'Publishing check', PUBLISHED: 'Result published', FAILED: 'Publication failed' };
 
-export function WebhookPanel({ baseline, repositoryUrl, dependencies, token, busy, fail, execute, loaded }: Props) {
+export function WebhookPanel({ features, baseline, repositoryUrl, dependencies, token, busy, fail, execute, loaded }: Props) {
   const [subscriptions, setSubscriptions] = useState<WebhookSubscription[]>([]);
   const [subscriptionsLoaded, setSubscriptionsLoaded] = useState(false);
   const [selected, setSelected] = useState('');
@@ -58,7 +59,7 @@ export function WebhookPanel({ baseline, repositoryUrl, dependencies, token, bus
   }
   function register() {
     try {
-      const body = parseWebhookRequest(path, graph);
+      const body = parseWebhookRequest(path, features.dependencyAnalysis ? graph : '{}');
       setMessage('');
       void run(() => api<WebhookSubscription>(`/baselines/${baseline.id}/github-webhooks`, token, body), result => {
         setSubscriptions(current => [result, ...current.filter(item => item.id !== result.id)]);
@@ -89,9 +90,9 @@ export function WebhookPanel({ baseline, repositoryUrl, dependencies, token, bus
     <form onSubmit={event => { event.preventDefault(); register(); }}>
       <label htmlFor="webhook-contract-path">Webhook contract file path</label>
       <input id="webhook-contract-path" maxLength={500} required disabled={busy} value={path} onChange={event => setPath(event.target.value)}/>
-      <label htmlFor="webhook-dependencies">Webhook dependency map</label>
+      {features.dependencyAnalysis && <><label htmlFor="webhook-dependencies">Webhook dependency map</label>
       <textarea id="webhook-dependencies" className="graph-input" spellCheck={false} disabled={busy} value={graph} onChange={event => setGraph(event.target.value)}/>
-      <small>This map is saved with the subscription. Later edits to comparison inputs do not change it.</small>
+      <small>This map is saved with the subscription. Later edits to comparison inputs do not change it.</small></>}
       <button disabled={busy || !supportedRepository}>Register webhook subscription</button>
     </form>
     <div className="actions"><button className="secondary" disabled={busy} onClick={loadSubscriptions}>Load subscriptions</button></div>
@@ -112,12 +113,12 @@ export function WebhookPanel({ baseline, repositoryUrl, dependencies, token, bus
         {originError && <p role="alert" className="alert">{originError}</p>}
         <label htmlFor="webhook-delivery-url">GitHub webhook URL</label><input id="webhook-delivery-url" readOnly value={deliveryUrl} placeholder="Enter a public HTTPS origin above"/>
         <div className="actions"><button className="quiet" disabled={!deliveryUrl} onClick={() => void copy(deliveryUrl, 'Webhook URL')}>Copy webhook URL</button></div>
-        <label htmlFor="webhook-check-name">Required check name</label><input id="webhook-check-name" readOnly value={checkName(subscription.id)}/>
-        <div className="actions"><button className="quiet" onClick={() => void copy(checkName(subscription.id), 'Check name')}>Copy check name</button></div>
+        {features.githubChecks && <><label htmlFor="webhook-check-name">Required check name</label><input id="webhook-check-name" readOnly value={checkName(subscription.id)}/>
+        <div className="actions"><button className="quiet" onClick={() => void copy(checkName(subscription.id), 'Check name')}>Copy check name</button></div></>}
         <ol className="webhook-instructions">
           <li>In GitHub repository settings, add this webhook URL, choose JSON content and subscribe to Pull requests.</li>
-          <li>Your backend operator configures the webhook secret, GitHub App key and subscription approval. Credentials are never entered here.</li>
-          <li>After a real check appears, require this exact check name from your expected GitHub App in the repository’s merge rules.</li>
+          <li>Your backend operator configures the webhook secret{features.githubChecks ? ", GitHub App key and subscription approval" : ""}. Credentials are never entered here.</li>
+          {features.githubChecks && <li>After a real check appears, require this exact check name from your expected GitHub App in the repository’s merge rules.</li>}
         </ol>
         <p className="subtle">Registration does not configure GitHub, approve App writes or enable merge blocking. Those settings are completed separately.</p>
       </div>
@@ -130,13 +131,13 @@ export function WebhookPanel({ baseline, repositoryUrl, dependencies, token, bus
           <div className="section-heading"><h4>PR #{row.pullNumber}</h4><time dateTime={row.createdAt}>{new Date(row.createdAt).toLocaleString()}</time></div>
           <dl><dt>Delivery</dt><dd><code>{row.deliveryId}</code></dd><dt>Commit</dt><dd><code>{row.headSha}</code></dd>
             <dt>Analysis</dt><dd><span className="webhook-state">{analysisLabels[row.state]}</span> · Attempt {row.attempts}{row.errorCode && <small>Error: {row.errorCode}</small>}</dd>
-            <dt>GitHub check</dt><dd>{row.check ? <><span className="webhook-state">{checkLabels[row.check.state]}</span> · Attempt {row.check.attempts}{row.check.errorCode && <small>Error: {row.check.errorCode}</small>}</> : 'Not queued. Check publication needs App approval and a terminal analysis outcome.'}</dd>
+            {features.githubChecks && <><dt>GitHub check</dt><dd>{row.check ? <><span className="webhook-state">{checkLabels[row.check.state]}</span> · Attempt {row.check.attempts}{row.check.errorCode && <small>Error: {row.check.errorCode}</small>}</> : 'Not queued. Check publication needs App approval and a terminal analysis outcome.'}</dd></>}
           </dl>
-          {row.check?.state === 'PUBLISHED' && <p className="subtle">Published means the result reached GitHub. Open the check or saved analysis to see whether it passed.</p>}
+          {features.githubChecks && row.check?.state === 'PUBLISHED' && <p className="subtle">Published means the result reached GitHub. Open the check or saved analysis to see whether it passed.</p>}
           <div className="actions">
             {row.analysisId && <button className="quiet" disabled={busy} onClick={() => void run(() => api<SavedAnalysis>(`/analyses/${row.analysisId}`, token), loaded)}>Open saved analysis</button>}
-            {row.check?.state === 'FAILED' && <button disabled={busy} onClick={() => retry(row)}>Retry check publication</button>}
-            {checkUrl && <a className="webhook-link" href={checkUrl} target="_blank" rel="noopener noreferrer">Open GitHub check ↗</a>}
+            {features.githubChecks && row.check?.state === 'FAILED' && <button disabled={busy} onClick={() => retry(row)}>Retry check publication</button>}
+            {features.githubChecks && checkUrl && <a className="webhook-link" href={checkUrl} target="_blank" rel="noopener noreferrer">Open GitHub check ↗</a>}
           </div>
         </article>;
       })}</div>

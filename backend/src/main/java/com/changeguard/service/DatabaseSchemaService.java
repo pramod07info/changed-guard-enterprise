@@ -30,12 +30,22 @@ public class DatabaseSchemaService {
       Map<String, List<String>> unique,
       Map<String, ForeignKey> foreignKeys) {}
 
+  private final boolean recommendations;
   private final DependencyGraphService graph;
   private final JsonMapper json;
 
   public DatabaseSchemaService(DependencyGraphService graph, JsonMapper json) {
+    this.recommendations = true;
     this.graph = graph;
     this.json = json;
+  }
+
+  @org.springframework.beans.factory.annotation.Autowired
+  public DatabaseSchemaService(
+      DependencyGraphService graph, JsonMapper json, com.changeguard.config.FeatureFlags flags) {
+    this.graph = graph;
+    this.json = json;
+    this.recommendations = flags.manifest().testRecommendations();
   }
 
   public DatabaseSchemaReport analyze(DatabaseSchemaRequest request) {
@@ -141,7 +151,7 @@ public class DatabaseSchemaService {
               c.nullable()
                   ? "Review positional queries and result mapping"
                   : "Validate existing-row backfill and legacy inserts, even if a default is"
-                        + " declared",
+                      + " declared",
               c.nullable() ? LOW : HIGH);
         }
       if (!old.primaryKey().equals(next.primaryKey()))
@@ -186,7 +196,7 @@ public class DatabaseSchemaService {
         risk,
         List.copyOf(changes),
         consumers,
-        List.copyOf(tests),
+        recommendations ? List.copyOf(tests) : List.of(),
         risk == HIGH,
         List.of(
             "Normalized PostgreSQL metadata only; no SQL parsing, database introspection or"

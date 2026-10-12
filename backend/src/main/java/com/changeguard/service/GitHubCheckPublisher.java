@@ -59,6 +59,7 @@ public class GitHubCheckPublisher {
   }
 
   public void process(GitHubCheckJob job) {
+    if (!settings.enabled()) return;
     if (!settings.approved(job.subscriptionId(), job.installationId())) {
       checks.fail(job, "CHECK_BINDING_REMOVED", false);
       return;

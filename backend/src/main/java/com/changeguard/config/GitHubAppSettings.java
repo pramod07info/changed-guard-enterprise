@@ -15,6 +15,15 @@ public class GitHubAppSettings {
   private final long appId;
   private final Map<UUID, Long> bindings;
 
+  @org.springframework.beans.factory.annotation.Autowired
+  public GitHubAppSettings(
+      FeatureFlags flags,
+      @Value("${changeguard.github.app.id:0}") long appId,
+      @Value("${changeguard.github.app.bindings:{}}") String bindingsJson,
+      JsonMapper json) {
+    this(flags.manifest().githubChecks(), appId, bindingsJson, flags.manifest().webhooks(), json);
+  }
+
   public GitHubAppSettings(
       @Value("${changeguard.github.app.enabled:false}") boolean enabled,
       @Value("${changeguard.github.app.id:0}") long appId,

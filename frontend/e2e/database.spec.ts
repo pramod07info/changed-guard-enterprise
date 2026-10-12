@@ -1,3 +1,4 @@
+import { enabledFeatures } from './feature-fixture';
 import { expect, test, type Page } from '@playwright/test';
 const report = { service: 'payments', risk: 'HIGH', requiresReview: true, changes: [{ code: 'COLUMN_REMOVED', table: 'public.payments', location: 'columns/reference', explanation: 'Existing queries can depend on this column', severity: 'HIGH' }], potentialConsumers: [{ service: 'orders', distance: 1, path: ['payments', 'orders'] }], recommendedTests: ['Run migration validation on a disposable database'], limitations: ['Normalized metadata only; SQL is not executed'] };
 const before = { dialect: 'postgresql', tables: { 'public.payments': { columns: { id: { type: 'uuid', nullable: false }, reference: { type: 'text', nullable: true } }, primaryKey: ['id'] } } };
@@ -12,6 +13,7 @@ async function fixture(page: Page, mode: 'normal' | 'unsupported' | 'expired' = 
   let saves = 0;
   await page.route('**/api/v1/**', async route => {
     const path = new URL(route.request().url()).pathname, method = route.request().method(); let body: unknown;
+    if (path === '/api/v1/features') { await route.fulfill({ json: enabledFeatures }); return; }
     if (path.endsWith('/auth/config')) body = { authorizationEndpoint: 'http://127.0.0.1:5173/fixture-authorize', tokenEndpoint: 'http://127.0.0.1:5173/oauth2/token', logoutEndpoint: 'http://127.0.0.1:5173/fixture-logout', clientId: 'changeguard-dashboard' };
     else if (path.endsWith('/session')) body = { subject: 'fixture-user', tenantId: 'team-platform' };
     else {

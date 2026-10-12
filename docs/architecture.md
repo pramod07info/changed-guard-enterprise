@@ -43,3 +43,18 @@ operator-approved GitHub App checks now automate analysis and publication. Requi
 checks need repository rule setup; private access and evidence-backed source
 dependency discovery remain planned. See github-pr-comparison.md, github-webhooks.md
 and github-app-checks.md for boundaries and setup.
+
+## Deployment capabilities
+
+Implemented modules now share immutable deployment flags in `config.FeatureFlags`.
+`controller.FeatureController` exposes an authenticated `dto.FeatureManifest`.
+`config.FeatureGateConfiguration` registers `service.FeatureGateFilter` after Spring
+Security/firewall and before controller work. Disabling features preserves OAuth/JWT
+and tenant boundaries. Analysis services suppress optional graph/test enrichments;
+GitHub signature/App settings/workers/publisher use effective flags and stop disabled
+work. Repositories and persisted evidence retain their existing schemas/tenant filters.
+
+The React workspace loads and validates the complete backend manifest with the session,
+then supplies capabilities to module components. Missing flags fail closed. These are
+startup deployment settings, not user-editable permissions or runtime kill switches.
+See [feature-flags.md](feature-flags.md) for all 13 flags, dependencies and limitations.
