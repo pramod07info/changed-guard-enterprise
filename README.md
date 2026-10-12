@@ -66,7 +66,7 @@ not been exercised here. See [authentication setup](docs/dashboard-security.md).
 See [catalog and baseline workflow](docs/catalog-baselines.md) for new dashboard
 features, tenant-scoped endpoints and current publication permission limits.
 See [GitHub PR comparison](docs/github-pr-comparison.md) to enable public PR
-reads. No token, private repository access or GitHub writes are implemented.
+reads. No GitHub token, private repository access or GitHub writes are implemented.
 
 See [architecture](docs/architecture.md) for implementation status and sequence.
 See [backend package conventions](docs/backend-architecture.md) and

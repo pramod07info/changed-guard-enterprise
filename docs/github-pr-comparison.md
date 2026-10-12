@@ -60,6 +60,8 @@ and fetch timestamp. The adapter validates that PR metadata belongs to the
 registered target repository. File requests use the recorded head SHA, not a
 moving branch name, and never follow metadata download URLs. If the PR advances,
 the result still describes the captured commit; run a new comparison for updates.
+Preview and save each fetch a fresh pinned head; their source SHAs may differ
+if the PR changes between actions. Saved evidence shows the revision actually analyzed.
 
 The Git blob SHA-1 is verified against downloaded bytes. SHA-1 here is Git's blob
 identifier, not a token-signing algorithm. JSON must be a single UTF-8 object,
@@ -76,6 +78,8 @@ a 5-second connection timeout and 20-second full-response deadline per request.
 Each comparison makes two sequential GitHub requests; no automatic retries are
 performed. Rate limiting and access restrictions are surfaced rather than
 silently switching credentials or endpoints.
+The dashboard gives PR requests a 60-second timeout to cover the two bounded
+upstream requests plus local analysis; other API calls retain a 30-second timeout.
 
 Baseline and catalog reads enforce tenant ownership before any outbound request.
 Network fetching happens outside database transactions; successful saves use

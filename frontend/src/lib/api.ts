@@ -7,7 +7,7 @@ export async function api<T>(path: string, token: string, body?: unknown): Promi
     method: body === undefined ? 'GET' : 'POST',
     headers: { Authorization: 'Bearer ' + token, ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    signal: AbortSignal.timeout(30000)
+    signal: AbortSignal.timeout(path.includes('/github-pr/') ? 60000 : 30000)
   });
   if (!response.ok) {
     let detail = response.status === 401 ? 'Your session is invalid or expired. Sign in again.' : 'Request failed (' + response.status + ').';
