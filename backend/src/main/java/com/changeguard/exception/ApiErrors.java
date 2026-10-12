@@ -9,6 +9,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @RestControllerAdvice
 public class ApiErrors {
+    @ExceptionHandler(CatalogConflictException.class)
+    public ResponseEntity<ProblemDetail> conflict(CatalogConflictException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage()));
+    }
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ProblemDetail> missing(ResourceNotFoundException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -24,6 +29,6 @@ public class ApiErrors {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ProblemDetail> malformed(HttpMessageNotReadableException exception) {
         return ResponseEntity.badRequest().body(
-                ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Body must be a valid impact request JSON object"));
+                ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Body must be a valid request JSON object"));
     }
 }

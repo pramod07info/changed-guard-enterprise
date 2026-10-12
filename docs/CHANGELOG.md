@@ -1,5 +1,19 @@
 # Implementation changelog
 
+## 2026-10-12 — Project catalog and immutable baselines
+
+- Added tenant-scoped project/service registration and paginated catalog reads.
+- Added immutable, environment/version-scoped baseline publication, validation,
+  publisher attribution and baseline-aware preview/save endpoints.
+- Added V5 schema and composite tenant/service foreign keys; retained baseline
+  provenance in saved history without assigning legacy/manual reports.
+- Added dashboard catalog, publication, baseline selection and comparison flows.
+- Added controller/service/repository/utility tests and browser workflow coverage.
+- Documented the API and limits in catalog-baselines.md; corrected stale tenant
+  and project implementation status in architecture.md.
+- Publication currently permits all tenant members; repository URLs are metadata
+  only, and GitHub PR integration/RBAC remain follow-up work.
+
 ## 2026-10-12 — Built-in OAuth 2 login
 
 - Replaced external identity-provider configuration and token-paste UI with an

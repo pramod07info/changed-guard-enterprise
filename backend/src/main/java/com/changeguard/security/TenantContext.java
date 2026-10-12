@@ -17,4 +17,11 @@ public class TenantContext {
             throw new AccessDeniedException("A verified tenant identity is required");
         return (String) jwt.getClaims().get("tenant_id");
     }
+    public String requiredSubject() {
+        requiredTenant();
+        var jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (jwt.getSubject() == null || jwt.getSubject().isBlank() || jwt.getSubject().length() > 200)
+            throw new AccessDeniedException("A valid publisher identity is required");
+        return jwt.getSubject();
+    }
 }

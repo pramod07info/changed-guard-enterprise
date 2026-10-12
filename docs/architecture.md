@@ -10,7 +10,7 @@ suggests tests; it must not override compatibility rules or deploy changes.
 | AI agents | Spring AI; LangChain4j alternative | Planned; choose one after compatibility validation |
 | Frontend | React, TypeScript | Dashboard, analysis/history/snapshot views implemented |
 | Messaging | Apache Kafka | Planned asynchronous analysis jobs |
-| Database | PostgreSQL, pgvector | PostgreSQL snapshot/report history implemented; audit, tenants and pgvector planned |
+| Database | PostgreSQL, pgvector | Tenant-scoped history, users, projects, services and baselines implemented; audit and pgvector planned |
 | Dependency analysis | JavaParser, Neo4j | Planned source extraction and persisted graph |
 | API contracts | OpenAPI, Pact | Bounded OpenAPI 3.0 JSON import implemented; Pact planned |
 | Kafka contracts | Avro, Schema Registry | Planned directional event compatibility |
@@ -19,7 +19,7 @@ suggests tests; it must not override compatibility rules or deploy changes.
 | Observability | OpenTelemetry, Prometheus | Prometheus endpoint supplied; tracing planned |
 
 1. OpenAPI import with directional request/response rules implemented; extend constraints and parameters next.
-2. Snapshot/report persistence implemented; projects and tenant isolation remain planned.
+2. Snapshot/report persistence, tenant isolation, project/service catalog and immutable baselines implemented.
 3. React UI, JWT authentication and tenant-scoped persistence implemented; built-in OAuth 2 PKCE sign-in implemented; RBAC planned.
 4. Extract Java call dependencies using JavaParser; persist verified edges in Neo4j.
 5. Add idempotent Kafka jobs, retry policies and dead-letter handling.
@@ -30,3 +30,11 @@ suggests tests; it must not override compatibility rules or deploy changes.
 pgvector stores semantic retrieval embeddings; Neo4j stores dependency edges.
 They serve separate queries. User-supplied repository code must not be executed
 by the analyzer; source analysis should be sandboxed and bounded.
+
+## Current catalog phase
+
+Services are registered with owner labels and repository metadata. Baselines
+are explicitly published by tenant members, selected by UUID, and linked to
+saved comparison evidence. Publication is not yet a role-based approval flow.
+Next: baseline-aware GitHub PR checks, then evidence-backed source dependency
+discovery. No remote repository operations are performed in the catalog phase.

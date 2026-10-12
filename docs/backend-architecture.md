@@ -55,3 +55,20 @@ API bearer validation stateless. `CorsConfig` restricts token endpoint origins.
 Spring Security identities. `AuthConfigurationController` returns public endpoint
 configuration using `AuthConfiguration`. Flyway V3 creates users; local V4 seeds
 a BCrypt demo account. Controllers never issue tokens directly.
+
+## Catalog and baseline boundaries
+
+`CatalogController` delegates metadata operations to `CatalogService` and
+baseline lifecycle/comparisons to `BaselineService`. `CatalogRepository` owns
+project/service SQL; `BaselineRepository` owns baseline SQL and lightweight
+summary read projections. Entities are `CatalogProject`, `CatalogServiceRecord`
+and `ContractBaseline`; HTTP request/response records remain in `dto`.
+`CatalogInput` is a concrete shared stateless validation helper in `utility`.
+`CatalogConflictException` maps expected uniqueness conflicts to 409.
+
+BaselineService validates contracts using OpenApiService before publication.
+It loads trusted before-contract evidence and invokes AnalysisHistoryService
+transactionally for saved comparisons. The nullable baseline ID is retained by
+AnalysisRepository and SavedAnalysis; composite foreign keys enforce its tenant
+and service identity. See `catalog-baselines.md` for routes and limitations.
+New tests follow controller/service/repository/utility package boundaries.

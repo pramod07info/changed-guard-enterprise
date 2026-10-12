@@ -5,6 +5,7 @@ import { ConnectionPanel } from './components/ConnectionPanel';
 import { AnalysisForm } from './components/AnalysisForm';
 import { ReportPanel } from './components/ReportPanel';
 import { HistoryPanel } from './components/HistoryPanel';
+import { CatalogPanel } from './components/CatalogPanel';
 import type { AnalysisInput, Report, SavedAnalysis, Session, Snapshot, Summary } from './types';
 
 export default function App() {
@@ -18,23 +19,29 @@ export default function App() {
   const [history, setHistory] = useState<Summary[]>([]);
   const [page, setPage] = useState({ service: '', offset: 0 });
   const generation = useRef(0);
+  const pendingRequests = useRef(0);
   function disconnect() {
     generation.current++;
+    pendingRequests.current = 0;
     setConnection(null); setReport(null); setSaved(null); setSnapshot(null); setHistory([]);
     setPage({ service: '', offset: 0 }); setNotice(''); setError(''); setBusy(false);
   }
   async function run<T>(task: () => Promise<T>, done: (value: T) => void) {
     const current = generation.current;
+    pendingRequests.current++;
     setBusy(true); setError(''); setNotice('');
     try { const value = await task(); if (current === generation.current) done(value); }
     catch (failure) {
       if (current !== generation.current) return;
       if (failure instanceof ApiError && failure.status === 401) disconnect();
       setError(failure instanceof Error ? failure.message : 'Unable to complete the request.');
-    } finally { if (current === generation.current) setBusy(false); }
+    } finally { if (current === generation.current) {
+      pendingRequests.current--; setBusy(pendingRequests.current > 0);
+    } }
   }
   const connect = (token: string) => {
     generation.current++;
+    pendingRequests.current = 0;
     void run(() => api<Session>('/session', token), session => setConnection({ token, session }));
   };
   const callbackStarted = useRef(false);
@@ -68,6 +75,10 @@ export default function App() {
       {error && <div className="alert" role="alert">{error}</div>}{notice && <div className="notice" role="status">{notice}</div>}
       {busy && <p role="status" className="subtle">Working…</p>}
       {!connection ? <ConnectionPanel login={login} busy={busy}/> : <>
+        <CatalogPanel token={connection.token} busy={busy} fail={setError} execute={run} compared={(result, persisted) => {
+          setReport(result); setSaved(persisted); setSnapshot(null); setHistory([]); setPage({ service: '', offset: 0 });
+          setNotice(persisted ? 'Baseline comparison and evidence saved.' : 'Baseline preview complete. This report has not been saved.');
+        }}/>
         <AnalysisForm submit={analyze} busy={busy} fail={setError}/>
         <ReportPanel report={report} saved={saved} busy={busy} snapshot={id => void run(() => api<Snapshot>('/snapshots/' + id, connection.token), setSnapshot)}/>
         {snapshot && <section className="card"><div className="section-heading"><h2>Contract snapshot</h2><button className="quiet" onClick={() => setSnapshot(null)}>Close</button></div><pre>{JSON.stringify(snapshot.document, null, 2)}</pre></section>}

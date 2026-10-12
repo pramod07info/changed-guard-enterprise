@@ -80,3 +80,52 @@ test('expired access token disconnects and presents a clear error', async ({ pag
   await expect(page.getByRole('button', { name: 'Sign in', exact: false })).toBeVisible();
   await expect(page.getByRole('alert')).toContainText('invalid or expired');
 });
+
+test('catalog publication and baseline comparison retain evidence', async ({ page }) => {
+  await oauthFixture(page);
+  const project = { id: 'project-1', name: 'Payments platform', createdBy: 'fixture-user', createdAt: saved.createdAt };
+  const service = { id: 'service-1', projectId: project.id, name: 'payments', owner: 'platform-team', repositoryUrl: null, createdAt: saved.createdAt };
+  const baseline = { id: 'baseline-1', serviceId: service.id, serviceName: 'payments', version: '1.0.0', environment: 'production',
+    publishedBy: 'fixture-user', publishedAt: saved.createdAt, document: { openapi: '3.0.3', paths: {} } };
+  let hasService = false;
+  await page.route('**/api/v1/**', async route => {
+    const path = new URL(route.request().url()).pathname;
+    const method = route.request().method();
+    let body: unknown;
+    if (path.endsWith('/auth/config')) body = authConfig;
+    else if (path.endsWith('/session')) body = { subject: 'fixture-user', tenantId: 'team-platform' };
+    else if (path.endsWith('/projects')) body = method === 'POST' ? project : [project];
+    else if (path.endsWith('/services') && method === 'POST') { hasService = true; body = service; }
+    else if (path.endsWith('/services')) body = hasService ? [service] : [];
+    else if (path.endsWith('/baselines')) body = method === 'POST' ? baseline : [baseline];
+    else if (path.endsWith('/baseline-1')) body = baseline;
+    else if (path.endsWith('/preview')) {
+      const input = route.request().postDataJSON();
+      expect(input.before).toBeUndefined(); expect(input.tenantId).toBeUndefined();
+      expect(input.after.openapi).toBe('3.0.3'); body = report;
+    } else if (path.endsWith('/analyses')) body = { ...saved, baselineId: baseline.id };
+    else body = [];
+    await route.fulfill({ status: method === 'POST' && !path.endsWith('/preview') ? 201 : 200,
+      contentType: 'application/json', body: JSON.stringify(body) });
+  });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Sign in', exact: false }).click();
+  await page.getByText('Project catalog & contract baselines', { exact: true }).click();
+  await page.getByLabel('New project name').fill(project.name);
+  await page.getByRole('button', { name: 'Create project', exact: true }).click();
+  await page.getByLabel('New service name').fill(service.name);
+  await page.getByLabel('Service owner').fill(service.owner);
+  await page.getByRole('button', { name: 'Register service', exact: true }).click();
+  await page.getByLabel('Baseline version', { exact: true }).fill(baseline.version);
+  await page.getByLabel('Baseline environment').fill(baseline.environment);
+  await page.getByRole('button', { name: 'Publish baseline', exact: true }).click();
+  await expect(page.getByLabel('Published contract (read only)')).toHaveAttribute('readonly', '');
+  await page.getByRole('button', { name: 'Preview against baseline', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText('Baseline preview complete');
+  await page.getByRole('button', { name: 'Analyze baseline & save', exact: true }).click();
+  await expect(page.getByText('Compared against published baseline: baseline-1')).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  await expect(page.getByText('Payments platform', { exact: true })).toHaveCount(0);
+});

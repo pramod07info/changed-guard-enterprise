@@ -39,6 +39,11 @@ public class AnalysisHistoryService {
 
     @Transactional
     public SavedAnalysis create(OpenApiRequest request) {
+        return create(request, null);
+    }
+
+    @Transactional
+    public SavedAnalysis create(OpenApiRequest request, UUID baselineId) {
         String tenantId = tenant.requiredTenant();
         if (request == null) throw new InvalidContractException("request is required");
         validateService(request.service());
@@ -49,8 +54,8 @@ public class AnalysisHistoryService {
         snapshots.insert(new ContractSnapshot(afterId, tenantId, request.service(), now, json.writeValueAsString(request.after())));
         reports.insert(new AnalysisRecord(id, tenantId, request.service(), now, beforeId, afterId,
                 json.writeValueAsString(report),
-                json.writeValueAsString(request.dependencies() == null ? Map.of() : request.dependencies())));
-        return new SavedAnalysis(id, request.service(), now, beforeId, afterId, report);
+                json.writeValueAsString(request.dependencies() == null ? Map.of() : request.dependencies()), baselineId));
+        return new SavedAnalysis(id, request.service(), now, beforeId, afterId, report, baselineId);
     }
 
     @Transactional(readOnly = true)
@@ -77,7 +82,7 @@ public class AnalysisHistoryService {
     }
     private SavedAnalysis toResponse(AnalysisRecord record) {
         return new SavedAnalysis(record.id(), record.service(), record.createdAt(),
-                record.beforeSnapshotId(), record.afterSnapshotId(), json.readValue(record.reportJson(), OpenApiReport.class));
+                record.beforeSnapshotId(), record.afterSnapshotId(), json.readValue(record.reportJson(), OpenApiReport.class), record.baselineId());
     }
     private void validateService(String service) {
         if (service == null || service.isBlank() || service.length() > 200)
