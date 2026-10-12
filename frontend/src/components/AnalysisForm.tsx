@@ -1,13 +1,14 @@
+import type { Features } from '../lib/features';
 import { useState } from 'react';
 import { sample } from '../sample';
 import { parseInput } from '../lib/input';
 import type { AnalysisInput } from '../types';
 
-export function AnalysisForm({ submit, busy, fail }: { submit: (input: AnalysisInput, save: boolean) => void; busy: boolean; fail: (message: string) => void }) {
+export function AnalysisForm({ features, submit, busy, fail }: { features: Features; submit: (input: AnalysisInput, save: boolean) => void; busy: boolean; fail: (message: string) => void }) {
   const [fields, setFields] = useState(sample);
   const update = (key: keyof typeof sample, value: string) => setFields(previous => ({ ...previous, [key]: value }));
   function send(save: boolean) {
-    try { submit(parseInput(fields.service, fields.before, fields.after, fields.dependencies), save); }
+    try { submit(parseInput(fields.service, fields.before, fields.after, features.dependencyAnalysis ? fields.dependencies : '{}'), save); }
     catch (error) { fail(error instanceof Error ? error.message : 'Invalid input.'); }
   }
   return <section className="card">
@@ -18,9 +19,9 @@ export function AnalysisForm({ submit, busy, fail }: { submit: (input: AnalysisI
       <label htmlFor={key}>{key === 'before' ? 'Before contract' : 'After contract'} <span>OpenAPI 3.0 JSON</span></label>
       <textarea id={key} spellCheck={false} value={fields[key]} onChange={e => update(key, e.target.value)}/>
     </div>)}</div>
-    <label htmlFor="dependencies">Service dependencies <span>consumer → providers</span></label>
-    <textarea id="dependencies" className="graph-input" spellCheck={false} value={fields.dependencies} onChange={e => update('dependencies', e.target.value)}/>
-    <div className="actions"><button disabled={busy} onClick={() => send(true)}>Analyze & save</button>
+    {features.dependencyAnalysis && <><label htmlFor="dependencies">Service dependencies <span>consumer → providers</span></label>
+    <textarea id="dependencies" className="graph-input" spellCheck={false} value={fields.dependencies} onChange={e => update('dependencies', e.target.value)}/></>}
+    <div className="actions">{features.analysisHistory && <button disabled={busy} onClick={() => send(true)}>Analyze & save</button>}
       <button className="secondary" disabled={busy} onClick={() => send(false)}>Preview analysis</button></div>
     <small>Unsupported contract features return an error. Reports identify potential impact and require human review.</small>
   </section>;

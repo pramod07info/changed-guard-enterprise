@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { signIn, finishSignIn, signOut } from './lib/auth';
+import { loadFeatures, type Features } from './lib/features';
 import { api, ApiError } from './lib/api';
 import { ConnectionPanel } from './components/ConnectionPanel';
 import { AnalysisForm } from './components/AnalysisForm';
@@ -10,7 +11,7 @@ import { DatabasePanel } from './components/DatabasePanel';
 import type { AnalysisInput, Report, SavedAnalysis, Session, Snapshot, Summary } from './types';
 
 export default function App() {
-  const [connection, setConnection] = useState<{ token: string; session: Session } | null>(null);
+  const [connection, setConnection] = useState<{ token: string; session: Session; features: Features } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -43,7 +44,7 @@ export default function App() {
   const connect = (token: string) => {
     generation.current++;
     pendingRequests.current = 0;
-    void run(() => api<Session>('/session', token), session => setConnection({ token, session }));
+    void run(() => Promise.all([api<Session>('/session', token), loadFeatures(token)]), ([session, features]) => setConnection({ token, session, features }));
   };
   const callbackStarted = useRef(false);
   useEffect(() => {
@@ -76,18 +77,19 @@ export default function App() {
       {error && <div className="alert" role="alert">{error}</div>}{notice && <div className="notice" role="status">{notice}</div>}
       {busy && <p role="status" className="subtle">Working…</p>}
       {!connection ? <ConnectionPanel login={login} busy={busy}/> : <>
-        <CatalogPanel token={connection.token} busy={busy} fail={setError} execute={run} loaded={result => {
+        {connection.features.catalog && <CatalogPanel features={connection.features} token={connection.token} busy={busy} fail={setError} execute={run} loaded={result => {
           setSaved(result); setReport(result.report); setSnapshot(null); setNotice('Saved webhook analysis loaded.');
         }} compared={(result, persisted) => {
           setReport(result); setSaved(persisted); setSnapshot(null); setHistory([]); setPage({ service: '', offset: 0 });
           setNotice(persisted ? 'Baseline comparison and evidence saved.' : 'Baseline preview complete. This report has not been saved.');
-        }}/>
-        <DatabasePanel token={connection.token} busy={busy} fail={setError} execute={run}/>
-        <AnalysisForm submit={analyze} busy={busy} fail={setError}/>
-        <ReportPanel report={report} saved={saved} busy={busy} snapshot={id => void run(() => api<Snapshot>('/snapshots/' + id, connection.token), setSnapshot)}/>
+        }}/>}
+        {connection.features.databaseAnalysis && <DatabasePanel features={connection.features} token={connection.token} busy={busy} fail={setError} execute={run}/>}
+        {connection.features.openApiAnalysis && <AnalysisForm features={connection.features} submit={analyze} busy={busy} fail={setError}/>}
+        {(connection.features.openApiAnalysis || connection.features.analysisHistory) && <ReportPanel features={connection.features} report={report} saved={saved} busy={busy} snapshot={id => void run(() => api<Snapshot>('/snapshots/' + id, connection.token), setSnapshot)}/>}
         {snapshot && <section className="card"><div className="section-heading"><h2>Contract snapshot</h2><button className="quiet" onClick={() => setSnapshot(null)}>Close</button></div><pre>{JSON.stringify(snapshot.document, null, 2)}</pre></section>}
-        <HistoryPanel entries={history} busy={busy} offset={page.offset} lastService={page.service} load={loadHistory}
-          select={id => void run(() => api<SavedAnalysis>('/analyses/' + id, connection.token), result => { setSaved(result); setReport(result.report); setSnapshot(null); setNotice('Saved analysis loaded.'); })}/>
+        {connection.features.analysisHistory && <HistoryPanel entries={history} busy={busy} offset={page.offset} lastService={page.service} load={loadHistory}
+          select={id => void run(() => api<SavedAnalysis>('/analyses/' + id, connection.token), result => { setSaved(result); setReport(result.report); setSnapshot(null); setNotice('Saved analysis loaded.'); })}/>}
+        {!connection.features.catalog && !connection.features.openApiAnalysis && !connection.features.databaseAnalysis && <section className="card"><h2>No dashboard features enabled</h2><p>Your server operator has disabled the available workspace modules.</p></section>}
       </>}
     </main><footer>ChangeGuard · Compatibility evidence, reviewed by people.</footer></>;
 }

@@ -16,6 +16,33 @@ management:
       exposure:
         include: health,info,prometheus
 changeguard:
+  features:
+    normalized-analysis:
+      enabled: ${CHANGEGUARD_FEATURE_NORMALIZED_ANALYSIS_ENABLED:true}
+    open-api-analysis:
+      enabled: ${CHANGEGUARD_FEATURE_OPEN_API_ANALYSIS_ENABLED:true}
+    analysis-history:
+      enabled: ${CHANGEGUARD_FEATURE_ANALYSIS_HISTORY_ENABLED:true}
+    catalog:
+      enabled: ${CHANGEGUARD_FEATURE_CATALOG_ENABLED:true}
+    baselines:
+      enabled: ${CHANGEGUARD_FEATURE_BASELINES_ENABLED:true}
+    database-analysis:
+      enabled: ${CHANGEGUARD_FEATURE_DATABASE_ANALYSIS_ENABLED:true}
+    database-history:
+      enabled: ${CHANGEGUARD_FEATURE_DATABASE_HISTORY_ENABLED:true}
+    dependency-analysis:
+      enabled: ${CHANGEGUARD_FEATURE_DEPENDENCY_ANALYSIS_ENABLED:true}
+    test-recommendations:
+      enabled: ${CHANGEGUARD_FEATURE_TEST_RECOMMENDATIONS_ENABLED:true}
+    github-pr:
+      enabled: ${CHANGEGUARD_FEATURE_GITHUB_PR_ENABLED:true}
+    webhooks:
+      enabled: ${CHANGEGUARD_FEATURE_WEBHOOKS_ENABLED:true}
+    github-checks:
+      enabled: ${CHANGEGUARD_FEATURE_GITHUB_CHECKS_ENABLED:true}
+    metrics:
+      enabled: ${CHANGEGUARD_FEATURE_METRICS_ENABLED:true}
   github:
     enabled: ${CHANGEGUARD_GITHUB_ENABLED:false}
     app:

@@ -1,5 +1,6 @@
 package com.changeguard.service;
 
+import com.changeguard.config.FeatureFlags;
 import com.changeguard.dto.OpenApiRequest;
 import com.changeguard.entity.GitHubWebhookJob;
 import com.changeguard.exception.GitHubIntegrationException;
@@ -43,8 +44,7 @@ public class GitHubWebhookWorker {
       AnalysisHistoryService history,
       PlatformTransactionManager manager,
       JsonMapper json,
-      @Value("${changeguard.github.webhooks.enabled:false}") boolean enabled,
-      @Value("${changeguard.github.enabled:false}") boolean githubEnabled,
+      FeatureFlags flags,
       @Value("${changeguard.github.webhooks.worker-enabled:true}") boolean polling) {
     this.jobs = jobs;
     this.baselines = baselines;
@@ -53,10 +53,8 @@ public class GitHubWebhookWorker {
     this.history = history;
     this.tx = new TransactionTemplate(manager);
     this.json = json;
-    this.enabled = enabled;
+    this.enabled = flags.manifest().webhooks();
     this.polling = polling;
-    if (enabled && !githubEnabled)
-      throw new IllegalArgumentException("GitHub integration must be enabled for webhooks");
   }
 
   @Scheduled(fixedDelayString = "${changeguard.github.webhooks.poll-ms:5000}")
@@ -72,6 +70,7 @@ public class GitHubWebhookWorker {
   }
 
   public void process(GitHubWebhookJob job) {
+    if (!enabled) return;
     var s = job.subscription();
     try {
       var baseline =

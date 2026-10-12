@@ -3,6 +3,7 @@ package com.changeguard.config;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import tools.jackson.core.type.TypeReference;
@@ -14,6 +15,15 @@ public class GitHubAppSettings {
   private final boolean enabled;
   private final long appId;
   private final Map<UUID, Long> bindings;
+
+  @Autowired
+  public GitHubAppSettings(
+      FeatureFlags flags,
+      @Value("${changeguard.github.app.id:0}") long appId,
+      @Value("${changeguard.github.app.bindings:{}}") String bindingsJson,
+      JsonMapper json) {
+    this(flags.manifest().githubChecks(), appId, bindingsJson, flags.manifest().webhooks(), json);
+  }
 
   public GitHubAppSettings(
       @Value("${changeguard.github.app.enabled:false}") boolean enabled,

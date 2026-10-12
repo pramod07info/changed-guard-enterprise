@@ -1,3 +1,4 @@
+import { enabledFeatures } from './feature-fixture';
 import { expect, test, type Page } from '@playwright/test';
 const subId = '11111111-1111-4111-8111-111111111111';
 const sub = { id: subId, baselineId: 'baseline-1', repository: 'team/payments', contractPath: 'api/openapi.json', deliveryPath: `/api/v1/github/webhooks/${subId}/deliveries` };
@@ -25,6 +26,7 @@ async function fixtures(page: Page, mode: 'normal' | 'disabled' | 'expired' | 'd
   await page.route('**/fixture-logout', route => route.fulfill({ status: 302, headers: { location: '/' } }));
   await page.route('**/api/v1/**', async route => {
     const url = new URL(route.request().url()), path = url.pathname, method = route.request().method();
+    if (path === '/api/v1/features') { await route.fulfill({ json: enabledFeatures }); return; }
     let body: unknown;
     if (path.endsWith('/auth/config')) body = { authorizationEndpoint: 'http://127.0.0.1:5173/fixture-authorize', tokenEndpoint: 'http://127.0.0.1:5173/oauth2/token', logoutEndpoint: 'http://127.0.0.1:5173/fixture-logout', clientId: 'changeguard-dashboard' };
     else {
@@ -134,4 +136,34 @@ test('late delivery response cannot restore a signed-out workspace', async ({ pa
   control.release();
   await expect(page.getByLabel('Webhook subscription')).toHaveCount(0);
   await expect(page.locator('.webhook-delivery')).toHaveCount(0);
+});
+
+test('checks and dependencies disabled keep webhook analysis available', async ({ page }) => {
+  await fixtures(page);
+  await page.route('**/api/v1/features', route => route.fulfill({ json: { ...enabledFeatures, githubChecks: false, dependencyAnalysis: false } }));
+  await selectBaseline(page);
+  await expect(page.getByLabel('Webhook dependency map')).toHaveCount(0);
+  await page.getByLabel('Webhook contract file path').fill('api/openapi.json');
+  await page.getByRole('button', { name: 'Register webhook subscription', exact: true }).click();
+  await expect(page.getByText('Analysis saved', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Required check name')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Retry check publication' })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Open GitHub check ↗' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Open saved analysis', exact: true }).click();
+  await expect(page.getByText('Saved webhook analysis loaded.')).toBeVisible();
+});
+
+test('catalog metadata works without requesting disabled baselines', async ({ page }) => {
+  const baselineRequests: string[] = [];
+  page.on('request', request => { if (new URL(request.url()).pathname.endsWith('/baselines')) baselineRequests.push(request.url()); });
+  await fixtures(page);
+  await page.route('**/api/v1/features', route => route.fulfill({ json: { ...enabledFeatures, baselines: false, githubPr: false, webhooks: false, githubChecks: false } }));
+  await page.goto('/'); await page.getByRole('button', { name: 'Sign in', exact: false }).click();
+  await page.getByText('Project catalog & contract baselines', { exact: true }).click();
+  await page.getByRole('button', { name: 'Load projects', exact: true }).click();
+  await page.getByLabel('Project', { exact: true }).selectOption(project.id);
+  await page.getByLabel('Registered service', { exact: true }).selectOption(service.id);
+  await expect(page.getByText('Owner: platform-team', { exact: false })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Publish baseline', exact: true })).toHaveCount(0);
+  expect(baselineRequests).toEqual([]);
 });

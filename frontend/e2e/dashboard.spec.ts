@@ -1,3 +1,4 @@
+import { enabledFeatures } from './feature-fixture';
 import { expect, test, type Page } from '@playwright/test';
 
 const report = {
@@ -35,6 +36,7 @@ test('connect, analyze/save, history, snapshot, mobile and logout', async ({ pag
   page.on('pageerror', error => errors.push(error.message));
   await page.route('**/api/v1/**', async route => {
     const path = new URL(route.request().url()).pathname;
+    if (path === '/api/v1/features') { await route.fulfill({ json: enabledFeatures }); return; }
     const body = path.endsWith('/auth/config') ? authConfig : path.endsWith('/session') ? { subject: 'fixture-user', tenantId: 'team-platform' } :
       path.includes('/snapshots/') ? { id: 'fixture-before', service: 'payments', createdAt: saved.createdAt, document: { openapi: '3.0.3', paths: {} } } :
       path.endsWith('/analyses') && route.request().method() === 'GET' ?
@@ -68,7 +70,9 @@ test('connect, analyze/save, history, snapshot, mobile and logout', async ({ pag
 test('expired access token disconnects and presents a clear error', async ({ page }) => {
   await oauthFixture(page);
   await page.route('**/api/v1/**', async route => {
-    if (new URL(route.request().url()).pathname.endsWith('/auth/config'))
+    if (new URL(route.request().url()).pathname.endsWith('/features'))
+      await route.fulfill({ json: enabledFeatures });
+    else if (new URL(route.request().url()).pathname.endsWith('/auth/config'))
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(authConfig) });
     else if (new URL(route.request().url()).pathname.endsWith('/session'))
       await route.fulfill({ status: 200, contentType: 'application/json', body: '{"subject":"fixture-user","tenantId":"tenant-a"}' });
@@ -92,6 +96,7 @@ test('catalog publication and baseline comparison retain evidence', async ({ pag
   let hasService = false;
   await page.route('**/api/v1/**', async route => {
     const path = new URL(route.request().url()).pathname;
+    if (path === '/api/v1/features') { await route.fulfill({ json: enabledFeatures }); return; }
     const method = route.request().method();
     let body: unknown;
     if (path.endsWith('/auth/config')) body = authConfig;
