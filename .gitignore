@@ -6,3 +6,8 @@
 .env
 .idea/
 *.iml
+
+# Local signing credentials
+local-secrets/
+*.pem
+*.key

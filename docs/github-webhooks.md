@@ -1,8 +1,8 @@
 # GitHub webhook-triggered analysis
 
 This phase adds signed webhook intake and durable automatic public-PR analysis.
-It does **not** publish GitHub checks, comments or block merges. Those require
-GitHub App installation authentication and a write adapter in a later phase.
+Webhook-only mode does not publish GitHub checks, comments or block merges.
+Opt-in App check publication is documented in `github-app-checks.md`.
 The existing manual public PR endpoints remain available.
 
 ## Enable locally
@@ -121,6 +121,13 @@ Official protocol references:
 - https://docs.github.com/en/webhooks/webhook-events-and-payloads
 - https://docs.github.com/en/webhooks/using-webhooks/best-practices-for-using-webhooks
 
-Next integration: GitHub App scoped installation tokens, commit-bound check runs,
-check retry/reconciliation, and required-check setup through branch protection.
+GitHub App scoped installation tokens, commit-bound checks, publication retries
+and required-check setup are implemented as a separate opt-in module.
 Merge blocking is not enabled by the webhook receiver itself.
+
+## Follow-on check publication
+
+Opt-in GitHub App check publication is now implemented separately from webhook
+analysis; see `github-app-checks.md`. Enablement requires an operator-approved
+subscription, an installed App and a private key. Existing webhook-only deployments
+retain their current read-only GitHub behavior unless App checks are enabled.

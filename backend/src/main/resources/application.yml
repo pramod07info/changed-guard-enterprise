@@ -18,6 +18,11 @@ management:
 changeguard:
   github:
     enabled: ${CHANGEGUARD_GITHUB_ENABLED:false}
+    app:
+      enabled: ${CHANGEGUARD_GITHUB_APP_ENABLED:false}
+      id: ${CHANGEGUARD_GITHUB_APP_ID:0}
+      private-key-file: ${CHANGEGUARD_GITHUB_APP_PRIVATE_KEY_FILE:}
+      bindings: '${CHANGEGUARD_GITHUB_APP_BINDINGS:{}}'
     webhooks:
       enabled: ${CHANGEGUARD_GITHUB_WEBHOOKS_ENABLED:false}
       secret: ${CHANGEGUARD_GITHUB_WEBHOOK_SECRET:}

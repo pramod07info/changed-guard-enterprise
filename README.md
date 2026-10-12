@@ -9,7 +9,9 @@ pramod07info/ChangeGuard.
 - React/TypeScript dashboard for contract analysis, saved history and snapshots.
 - Built-in OAuth 2 authorization server, PostgreSQL users, PKCE dashboard login and tenant-scoped persistence.
 - Project/service catalog, immutable versioned baselines and baseline-linked comparison evidence.
-- Opt-in read-only public GitHub PR contract comparison with pinned commit/blob evidence.
+- Opt-in public GitHub PR contract comparison with pinned commit/blob evidence.
+- Signed webhooks and durable tenant-bound automatic analysis with retries.
+- Opt-in GitHub App checks on exact commit SHAs, a separate publication queue and tenant-protected status/retry APIs.
 
 - Normalized response contract comparison: endpoint removal, field removal, type changes.
 - Cycle-safe dependency traversal with potential consumers and shortest impact paths.
@@ -18,7 +20,7 @@ pramod07info/ChangeGuard.
 - Unit and HTTP tests, Docker build and local Compose entry point.
 
 PostgreSQL now stores contract snapshots and analysis history through new endpoints.
-AI inference and external repository integrations remain planned.
+AI inference, private repository access, GitLab and Jenkins integrations remain planned.
 
 ## Run with Java 21 and Maven 3.9+
 
@@ -53,13 +55,15 @@ may reject them. Review flags are advisory.
 
 ## Validation status
 
-GitHub PR comparison verification passed: 102 backend tests against PostgreSQL,
+GitHub App check publication verification passed: 142 backend tests against PostgreSQL,
 13 frontend unit tests, 3 browser smoke tests, and frontend/backend builds.
-[Backend CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38209607677)
-and [frontend CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38209607678).
+[Backend CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38223729388)
+and [frontend CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38223729053).
+Validated code commit: `a9d28fd9261f0c54da4e22666fe33bc0375bd629`.
 Browser smoke tests use OAuth/API fixtures; backend tests perform real database
 login, PKCE exchange, catalog/baseline persistence and tenant isolation. GitHub
-adapter behavior uses response fixtures and loopback HTTP tests, not a live GitHub request. Docker Compose runtime has
+read/write adapter behavior uses response fixtures and loopback HTTP tests, not live
+GitHub requests. No App, webhook or merge rules were configured by these tests. Docker Compose runtime has
 not been exercised here. See [authentication setup](docs/dashboard-security.md).
 
 ## Planned stack
@@ -67,7 +71,10 @@ not been exercised here. See [authentication setup](docs/dashboard-security.md).
 See [catalog and baseline workflow](docs/catalog-baselines.md) for new dashboard
 features, tenant-scoped endpoints and current publication permission limits.
 See [GitHub PR comparison](docs/github-pr-comparison.md) to enable public PR
-reads. No GitHub token, private repository access or GitHub writes are implemented.
+reads, [signed webhooks](docs/github-webhooks.md) for automatic analysis, and
+[GitHub App checks](docs/github-app-checks.md) for repository-scoped check publishing
+and required-check setup. App writes are disabled by default. Private repository
+access and automatic merge-rule configuration remain unimplemented.
 
 See [architecture](docs/architecture.md) for implementation status and sequence.
 See [backend package conventions](docs/backend-architecture.md) and

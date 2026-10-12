@@ -141,3 +141,16 @@ workflow executes this command on each push and pull request.
 - Added layer-organized tests and `docs/github-webhooks.md` setup/operational guide.
 - Preserved manual public-PR comparison. This phase does not publish GitHub checks,
   change branch protection, support private repos or introduce a webhook UI.
+
+## GitHub App commit checks
+
+- Added opt-in RSA App JWT authentication and operator-approved subscription bindings.
+- Added repository/installation/App identity verification and checks-only repository
+  token scoping, fixed-origin bounded writes and external-ID reconciliation.
+- Added Flyway V8 durable check-publication queue with tenant foreign keys, reclaimable
+  leases and bounded retries independent of analysis evidence.
+- Added commit-bound success/failure checks; failed, superseded or review-required
+  analysis cannot pass the check. Added protected publication status/retry endpoints.
+- Added integration/controller/repository tests, Compose configuration and App/required
+  check setup documentation. Private repositories, merge-group events and automatic
+  branch-rule configuration remain outside this phase.
