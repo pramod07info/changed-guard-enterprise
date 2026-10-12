@@ -66,6 +66,8 @@ if the PR changes between actions. Saved evidence shows the revision actually an
 The Git blob SHA-1 is verified against downloaded bytes. SHA-1 here is Git's blob
 identifier, not a token-signing algorithm. JSON must be a single UTF-8 object,
 with no trailing tokens, within the existing supported OpenAPI subset.
+Snapshots store parsed JSON; the blob SHA verifies fetched raw file bytes, not
+the reformatted JSONB representation stored in PostgreSQL.
 Contracts are limited to 1 MiB; upstream JSON/base64 responses are bounded to
 2 MiB before parsing. Paths are limited to 500 characters and ASCII repository
 path characters, with no absolute paths, traversal segments, URL/query syntax or
@@ -114,3 +116,8 @@ Loopback HTTP transport tests exercise real bounded reads without GitHub access.
 Controller/database tests use a mocked adapter and verify tenant ownership,
 no-write failures and saved-source round trips. Browser tests use API fixtures.
 A live GitHub request and Docker Compose runtime are not verified by those tests.
+
+Verified implementation commit `41fd3f7d923f3cf72a96547a31ca7e5521f0c87e`:
+102 backend tests, 13 frontend unit tests and 3 browser smoke tests passed,
+with successful backend/frontend builds. Backend CI run 38209607677; frontend
+CI run 38209607678.

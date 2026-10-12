@@ -11,6 +11,11 @@
 - Documented activation and public-only/read-only limits in github-pr-comparison.md.
 - No PAT, external GitHub writes, webhook automation or private-repository access.
 
+Verified implementation commit 41fd3f7d923f3cf72a96547a31ca7e5521f0c87e:
+102 backend tests passed against PostgreSQL, 13 frontend unit tests and 3 browser
+smoke tests passed, and both builds passed. Backend CI run 38209607677; frontend
+CI run 38209607678. GitHub tests use fixtures/loopback HTTP, not a live GitHub request.
+
 ## 2026-10-12 — Project catalog and immutable baselines
 
 - Added tenant-scoped project/service registration and paginated catalog reads.
