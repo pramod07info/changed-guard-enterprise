@@ -55,13 +55,15 @@ may reject them. Review flags are advisory.
 
 ## Validation status
 
-GitHub PR comparison verification passed: 102 backend tests against PostgreSQL,
+GitHub App check publication verification passed: 142 backend tests against PostgreSQL,
 13 frontend unit tests, 3 browser smoke tests, and frontend/backend builds.
-[Backend CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38209607677)
-and [frontend CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38209607678).
+[Backend CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38223729388)
+and [frontend CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38223729053).
+Validated code commit: `a9d28fd9261f0c54da4e22666fe33bc0375bd629`.
 Browser smoke tests use OAuth/API fixtures; backend tests perform real database
 login, PKCE exchange, catalog/baseline persistence and tenant isolation. GitHub
-adapter behavior uses response fixtures and loopback HTTP tests, not a live GitHub request. Docker Compose runtime has
+read/write adapter behavior uses response fixtures and loopback HTTP tests, not live
+GitHub requests. No App, webhook or merge rules were configured by these tests. Docker Compose runtime has
 not been exercised here. See [authentication setup](docs/dashboard-security.md).
 
 ## Planned stack
