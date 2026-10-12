@@ -84,9 +84,11 @@ test('expired access token disconnects and presents a clear error', async ({ pag
 test('catalog publication and baseline comparison retain evidence', async ({ page }) => {
   await oauthFixture(page);
   const project = { id: 'project-1', name: 'Payments platform', createdBy: 'fixture-user', createdAt: saved.createdAt };
-  const service = { id: 'service-1', projectId: project.id, name: 'payments', owner: 'platform-team', repositoryUrl: null, createdAt: saved.createdAt };
+  const service = { id: 'service-1', projectId: project.id, name: 'payments', owner: 'platform-team', repositoryUrl: 'https://github.com/team/payments', createdAt: saved.createdAt };
   const baseline = { id: 'baseline-1', serviceId: service.id, serviceName: 'payments', version: '1.0.0', environment: 'production',
     publishedBy: 'fixture-user', publishedAt: saved.createdAt, document: { openapi: '3.0.3', paths: {} } };
+  const source = { repository: 'team/payments', headRepository: 'team/payments', pullNumber: 7, pullUrl: 'https://github.com/team/payments/pull/7',
+    baseSha: 'a'.repeat(40), headSha: 'b'.repeat(40), contractPath: 'api/openapi.json', blobSha: 'c'.repeat(40), fetchedAt: saved.createdAt };
   let hasService = false;
   await page.route('**/api/v1/**', async route => {
     const path = new URL(route.request().url()).pathname;
@@ -99,6 +101,12 @@ test('catalog publication and baseline comparison retain evidence', async ({ pag
     else if (path.endsWith('/services')) body = hasService ? [service] : [];
     else if (path.endsWith('/baselines')) body = method === 'POST' ? baseline : [baseline];
     else if (path.endsWith('/baseline-1')) body = baseline;
+    else if (path.includes('/github-pr/')) {
+      const input = route.request().postDataJSON();
+      expect(input.pullNumber).toBe(7); expect(input.contractPath).toBe(source.contractPath);
+      expect(input.repository).toBeUndefined(); expect(input.token).toBeUndefined();
+      body = path.endsWith('/preview') ? { baselineId: baseline.id, source, report } : { ...saved, baselineId: baseline.id, githubSource: source };
+    }
     else if (path.endsWith('/preview')) {
       const input = route.request().postDataJSON();
       expect(input.before).toBeUndefined(); expect(input.tenantId).toBeUndefined();
@@ -115,6 +123,7 @@ test('catalog publication and baseline comparison retain evidence', async ({ pag
   await page.getByRole('button', { name: 'Create project', exact: true }).click();
   await page.getByLabel('New service name').fill(service.name);
   await page.getByLabel('Service owner').fill(service.owner);
+  await page.getByLabel('Repository URL (optional)').fill(service.repositoryUrl);
   await page.getByRole('button', { name: 'Register service', exact: true }).click();
   await page.getByLabel('Baseline version', { exact: true }).fill(baseline.version);
   await page.getByLabel('Baseline environment').fill(baseline.environment);
@@ -124,6 +133,13 @@ test('catalog publication and baseline comparison retain evidence', async ({ pag
   await expect(page.getByRole('status')).toContainText('Baseline preview complete');
   await page.getByRole('button', { name: 'Analyze baseline & save', exact: true }).click();
   await expect(page.getByText('Compared against published baseline: baseline-1')).toBeVisible();
+  await page.getByLabel('GitHub PR number').fill('7');
+  await page.getByLabel('PR contract file path').fill(source.contractPath);
+  await page.getByRole('button', { name: 'Preview GitHub PR', exact: true }).click();
+  await expect(page.getByText('Analyzed team/payments PR #7', { exact: false })).toBeVisible();
+  await page.getByRole('button', { name: 'Analyze GitHub PR & save', exact: true }).click();
+  await expect(page.locator('.saved')).toContainText(source.headSha);
+  await expect(page.locator('.saved')).toContainText(source.blobSha);
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.getByRole('button', { name: 'Sign out', exact: true }).click();

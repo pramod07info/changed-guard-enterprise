@@ -1,5 +1,16 @@
 # Implementation changelog
 
+## 2026-10-12 — Read-only GitHub PR comparison
+
+- Added opt-in public GitHub PR fetching at an explicit head commit, bounded
+  response handling, path validation and Git blob integrity checks.
+- Added baseline-aware PR preview/save APIs with persisted source provenance
+  through Flyway V6; old/manual reports remain unchanged except nullable source.
+- Added dashboard PR number/path controls and source evidence in reports.
+- Added adapter, loopback transport, service, controller/database and frontend tests.
+- Documented activation and public-only/read-only limits in github-pr-comparison.md.
+- No PAT, external GitHub writes, webhook automation or private-repository access.
+
 ## 2026-10-12 — Project catalog and immutable baselines
 
 - Added tenant-scoped project/service registration and paginated catalog reads.

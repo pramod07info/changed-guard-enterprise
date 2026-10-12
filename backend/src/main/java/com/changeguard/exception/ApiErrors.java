@@ -9,6 +9,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @RestControllerAdvice
 public class ApiErrors {
+    @ExceptionHandler(GitHubIntegrationException.class)
+    public ResponseEntity<ProblemDetail> github(GitHubIntegrationException exception) {
+        return ResponseEntity.status(exception.status()).body(
+                ProblemDetail.forStatusAndDetail(exception.status(), exception.getMessage()));
+    }
     @ExceptionHandler(CatalogConflictException.class)
     public ResponseEntity<ProblemDetail> conflict(CatalogConflictException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(

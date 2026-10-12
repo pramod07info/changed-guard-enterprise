@@ -16,6 +16,8 @@ management:
       exposure:
         include: health,info,prometheus
 changeguard:
+  github:
+    enabled: ${CHANGEGUARD_GITHUB_ENABLED:false}
   auth:
     issuer: ${CHANGEGUARD_AUTH_ISSUER:http://localhost:8080}
     frontend-url: ${CHANGEGUARD_FRONTEND_URL:http://localhost:3000}

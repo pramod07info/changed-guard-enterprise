@@ -14,7 +14,7 @@ suggests tests; it must not override compatibility rules or deploy changes.
 | Dependency analysis | JavaParser, Neo4j | Planned source extraction and persisted graph |
 | API contracts | OpenAPI, Pact | Bounded OpenAPI 3.0 JSON import implemented; Pact planned |
 | Kafka contracts | Avro, Schema Registry | Planned directional event compatibility |
-| Integrations | GitHub, GitLab, Jenkins | Planned authenticated repository and CI adapters |
+| Integrations | GitHub, GitLab, Jenkins | Public read-only GitHub PR contract comparison implemented; GitHub writes, private access, GitLab and Jenkins planned |
 | Infrastructure | Docker, Kubernetes, AWS | Docker build supplied; Kubernetes/AWS planned |
 | Observability | OpenTelemetry, Prometheus | Prometheus endpoint supplied; tracing planned |
 
@@ -36,5 +36,7 @@ by the analyzer; source analysis should be sandboxed and bounded.
 Services are registered with owner labels and repository metadata. Baselines
 are explicitly published by tenant members, selected by UUID, and linked to
 saved comparison evidence. Publication is not yet a role-based approval flow.
-Next: baseline-aware GitHub PR checks, then evidence-backed source dependency
-discovery. No remote repository operations are performed in the catalog phase.
+Baseline-aware public GitHub PR comparison is implemented as an opt-in read-only
+adapter; catalog registration itself remains metadata-only. Automated PR checks,
+private integration authorization and evidence-backed source dependency discovery
+remain planned. See github-pr-comparison.md for the current boundaries.

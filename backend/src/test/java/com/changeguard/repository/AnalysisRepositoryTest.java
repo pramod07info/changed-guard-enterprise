@@ -55,4 +55,11 @@ class AnalysisRepositoryTest {
                 new AnalysisRecord(UUID.randomUUID(), "tenant-b", "shared-service", Instant.now(),
                         before, after, "{}", "{}")));
     }
+    @Test void sourceEvidenceRequiresABaseline() {
+        UUID before = UUID.randomUUID(), after = UUID.randomUUID();
+        snapshots.insert(new ContractSnapshot(before, "tenant-a", "payments", Instant.now(), "{}"));
+        snapshots.insert(new ContractSnapshot(after, "tenant-a", "payments", Instant.now(), "{}"));
+        assertThrows(DataIntegrityViolationException.class, () -> reports.insert(new AnalysisRecord(UUID.randomUUID(), "tenant-a",
+                "payments", Instant.now(), before, after, "{}", "{}", null, "{}")));
+    }
 }

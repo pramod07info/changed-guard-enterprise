@@ -72,3 +72,14 @@ transactionally for saved comparisons. The nullable baseline ID is retained by
 AnalysisRepository and SavedAnalysis; composite foreign keys enforce its tenant
 and service identity. See `catalog-baselines.md` for routes and limitations.
 New tests follow controller/service/repository/utility package boundaries.
+
+## GitHub integration boundary
+
+`GitHubPrController` is thin; `GitHubPrService` checks tenant-owned baseline and
+catalog metadata before outbound fetching. Protocol parsing and bounded HTTP
+transport live in `com.changeguard.integration.github`, with fixed-origin wiring
+in `GitHubConfig`. No credentials or arbitrary remote URLs are accepted from
+request bodies. Network I/O happens before the transactional baseline save.
+`GitHubSource` is a provenance DTO, serialized to nullable report JSONB by the
+existing repository. Source requires a baseline through the V6 constraint.
+Tests mirror the integration/controller/service/repository boundaries.

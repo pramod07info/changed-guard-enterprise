@@ -44,6 +44,11 @@ public class AnalysisHistoryService {
 
     @Transactional
     public SavedAnalysis create(OpenApiRequest request, UUID baselineId) {
+        return create(request, baselineId, null);
+    }
+
+    @Transactional
+    public SavedAnalysis create(OpenApiRequest request, UUID baselineId, com.changeguard.dto.GitHubSource source) {
         String tenantId = tenant.requiredTenant();
         if (request == null) throw new InvalidContractException("request is required");
         validateService(request.service());
@@ -54,8 +59,9 @@ public class AnalysisHistoryService {
         snapshots.insert(new ContractSnapshot(afterId, tenantId, request.service(), now, json.writeValueAsString(request.after())));
         reports.insert(new AnalysisRecord(id, tenantId, request.service(), now, beforeId, afterId,
                 json.writeValueAsString(report),
-                json.writeValueAsString(request.dependencies() == null ? Map.of() : request.dependencies()), baselineId));
-        return new SavedAnalysis(id, request.service(), now, beforeId, afterId, report, baselineId);
+                json.writeValueAsString(request.dependencies() == null ? Map.of() : request.dependencies()), baselineId,
+                source == null ? null : json.writeValueAsString(source)));
+        return new SavedAnalysis(id, request.service(), now, beforeId, afterId, report, baselineId, source);
     }
 
     @Transactional(readOnly = true)
@@ -82,7 +88,8 @@ public class AnalysisHistoryService {
     }
     private SavedAnalysis toResponse(AnalysisRecord record) {
         return new SavedAnalysis(record.id(), record.service(), record.createdAt(),
-                record.beforeSnapshotId(), record.afterSnapshotId(), json.readValue(record.reportJson(), OpenApiReport.class), record.baselineId());
+                record.beforeSnapshotId(), record.afterSnapshotId(), json.readValue(record.reportJson(), OpenApiReport.class), record.baselineId(),
+                record.githubSourceJson() == null ? null : json.readValue(record.githubSourceJson(), com.changeguard.dto.GitHubSource.class));
     }
     private void validateService(String service) {
         if (service == null || service.isBlank() || service.length() > 200)

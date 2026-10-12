@@ -9,6 +9,7 @@ pramod07info/ChangeGuard.
 - React/TypeScript dashboard for contract analysis, saved history and snapshots.
 - Built-in OAuth 2 authorization server, PostgreSQL users, PKCE dashboard login and tenant-scoped persistence.
 - Project/service catalog, immutable versioned baselines and baseline-linked comparison evidence.
+- Opt-in read-only public GitHub PR contract comparison with pinned commit/blob evidence.
 
 - Normalized response contract comparison: endpoint removal, field removal, type changes.
 - Cycle-safe dependency traversal with potential consumers and shortest impact paths.
@@ -64,6 +65,8 @@ not been exercised here. See [authentication setup](docs/dashboard-security.md).
 
 See [catalog and baseline workflow](docs/catalog-baselines.md) for new dashboard
 features, tenant-scoped endpoints and current publication permission limits.
+See [GitHub PR comparison](docs/github-pr-comparison.md) to enable public PR
+reads. No token, private repository access or GitHub writes are implemented.
 
 See [architecture](docs/architecture.md) for implementation status and sequence.
 See [backend package conventions](docs/backend-architecture.md) and

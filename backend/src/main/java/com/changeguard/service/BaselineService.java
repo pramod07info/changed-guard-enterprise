@@ -66,6 +66,11 @@ public class BaselineService {
         var baseline = required(id);
         return history.create(comparison(baseline, request), baseline.id());
     }
+    @Transactional
+    public SavedAnalysis analyzeGitHubAndSave(UUID id, BaselineAnalysisRequest request, GitHubSource source) {
+        var baseline = required(id);
+        return history.create(comparison(baseline, request), baseline.id(), source);
+    }
     private ContractBaseline required(UUID id) {
         return baselines.find(tenant.requiredTenant(), id).orElseThrow(() -> new ResourceNotFoundException("Baseline not found"));
     }

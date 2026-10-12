@@ -20,7 +20,8 @@ export function ReportPanel({ report, saved, snapshot, busy }: {
       <h3>Suggested tests</h3><ul>{report.recommendedTests.map(test => <li key={test}>{test}</li>)}</ul>
       <details><summary>Scope and limitations</summary><ul>{report.limitations.map(item => <li key={item}>{item}</li>)}</ul></details>
       {saved && <div className="saved"><small>Saved {new Date(saved.createdAt).toLocaleString()} · {saved.id}</small>
-        {saved.baselineId && <small>Compared against published baseline: {saved.baselineId}</small>}<div className="actions">
+        {saved.baselineId && <small>Compared against published baseline: {saved.baselineId}</small>}
+        {saved.githubSource && <small>GitHub {saved.githubSource.repository} PR #{saved.githubSource.pullNumber} · Head <code>{saved.githubSource.headSha}</code> · File <code>{saved.githubSource.contractPath}</code> · Blob <code>{saved.githubSource.blobSha}</code></small>}<div className="actions">
         <button className="quiet" disabled={busy} onClick={() => snapshot(saved.beforeSnapshotId)}>Before snapshot</button>
         <button className="quiet" disabled={busy} onClick={() => snapshot(saved.afterSnapshotId)}>After snapshot</button></div></div>}
     </>}

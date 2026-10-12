@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { api } from '../lib/api';
 import { parseInput } from '../lib/input';
 import { sample } from '../sample';
+import { GitHubPrPanel } from './GitHubPrPanel';
 import type { Baseline, BaselineSummary, CatalogService, Project, Report, SavedAnalysis } from '../types';
 
 type Props = {
@@ -128,6 +129,8 @@ export function CatalogPanel({ token, busy, fail, execute, compared }: Props) {
       <label htmlFor="baseline-dependencies">Baseline comparison dependencies</label><textarea id="baseline-dependencies" spellCheck={false} value={dependencies} onChange={event => setDependencies(event.target.value)}/>
       <div className="actions"><button disabled={busy} onClick={() => compare(true)}>Analyze baseline & save</button>
         <button disabled={busy} className="secondary" onClick={() => compare(false)}>Preview against baseline</button></div>
+      <GitHubPrPanel key={baseline.id} baseline={baseline} repositoryUrl={service?.repositoryUrl ?? null}
+        dependencies={dependencies} token={token} busy={busy} fail={fail} execute={execute} compared={compared}/>
     </>}
   </details></section>;
 }
