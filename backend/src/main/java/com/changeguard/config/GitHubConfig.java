@@ -10,6 +10,10 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class GitHubConfig {
+    @Bean com.changeguard.integration.github.GitHubAppTransport gitHubAppTransport(tools.jackson.databind.json.JsonMapper json) {
+        var client=HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).followRedirects(HttpClient.Redirect.NEVER).build();
+        return new com.changeguard.integration.github.GitHubAppHttpTransport(client,URI.create("https://api.github.com"),json);
+    }
     @Bean GitHubTransport gitHubTransport() {
         var client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5))
                 .followRedirects(HttpClient.Redirect.NEVER).build();

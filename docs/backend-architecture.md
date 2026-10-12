@@ -104,5 +104,24 @@ transactions, rejects superseded heads and atomically saves analysis plus job ou
 The package-private `AnalysisHistoryService.createForTenant` is callable only inside
 this trusted service layer with an enclosing transaction; existing public methods
 still require JWT tenant identity. Lease ownership is rechecked under row lock before
-any evidence write. See `github-webhooks.md` for setup, retries and scope. Check-run
-publishing, merge blocking and frontend webhook management remain unimplemented.
+any evidence write. See `github-webhooks.md` for setup, retries and scope. App check-run
+publishing is an opt-in follow-on module. Merge rules require operator setup;
+frontend webhook management remains unimplemented.
+
+## GitHub App checks boundary
+
+`GitHubAppSettings` holds operator-approved subscription/installation bindings.
+`GitHubAppJwt` loads a read-only PKCS#8 RSA key and issues short-lived App JWTs.
+`GitHubChecksClient` verifies repository/installation/App identity, requests a
+repository-scoped checks-only installation token, reconciles deterministic external
+IDs and writes results to the exact delivery SHA. Its bounded fixed-origin transport
+is separate from the unchanged unauthenticated public-contract reader.
+
+`GitHubCheckRepository` owns V8's tenant-bound publication queue and SQL. Its trusted
+seed/claim operations are worker boundaries; tenant status/retry queries filter tenant
+identity. `GitHubCheckPublisher` reconciles completed analysis into that queue, maps
+saved deterministic reports to pass/fail, and retries remote writes independently
+of analysis. All network I/O runs outside database transactions. The controller
+and service expose tenant-protected publication status and explicit failed-publication
+retry. No route grants App approval or accepts installation credentials from users.
+See `github-app-checks.md` for setup, reconciliation limits and required-check rules.

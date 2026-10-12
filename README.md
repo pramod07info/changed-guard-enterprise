@@ -9,7 +9,9 @@ pramod07info/ChangeGuard.
 - React/TypeScript dashboard for contract analysis, saved history and snapshots.
 - Built-in OAuth 2 authorization server, PostgreSQL users, PKCE dashboard login and tenant-scoped persistence.
 - Project/service catalog, immutable versioned baselines and baseline-linked comparison evidence.
-- Opt-in read-only public GitHub PR contract comparison with pinned commit/blob evidence.
+- Opt-in public GitHub PR contract comparison with pinned commit/blob evidence.
+- Signed webhooks and durable tenant-bound automatic analysis with retries.
+- Opt-in GitHub App checks on exact commit SHAs, a separate publication queue and tenant-protected status/retry APIs.
 
 - Normalized response contract comparison: endpoint removal, field removal, type changes.
 - Cycle-safe dependency traversal with potential consumers and shortest impact paths.
@@ -18,7 +20,7 @@ pramod07info/ChangeGuard.
 - Unit and HTTP tests, Docker build and local Compose entry point.
 
 PostgreSQL now stores contract snapshots and analysis history through new endpoints.
-AI inference and external repository integrations remain planned.
+AI inference, private repository access, GitLab and Jenkins integrations remain planned.
 
 ## Run with Java 21 and Maven 3.9+
 
@@ -67,7 +69,10 @@ not been exercised here. See [authentication setup](docs/dashboard-security.md).
 See [catalog and baseline workflow](docs/catalog-baselines.md) for new dashboard
 features, tenant-scoped endpoints and current publication permission limits.
 See [GitHub PR comparison](docs/github-pr-comparison.md) to enable public PR
-reads. No GitHub token, private repository access or GitHub writes are implemented.
+reads, [signed webhooks](docs/github-webhooks.md) for automatic analysis, and
+[GitHub App checks](docs/github-app-checks.md) for repository-scoped check publishing
+and required-check setup. App writes are disabled by default. Private repository
+access and automatic merge-rule configuration remain unimplemented.
 
 See [architecture](docs/architecture.md) for implementation status and sequence.
 See [backend package conventions](docs/backend-architecture.md) and
