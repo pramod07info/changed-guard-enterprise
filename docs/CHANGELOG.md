@@ -14,6 +14,13 @@
 - Publication currently permits all tenant members; repository URLs are metadata
   only, and GitHub PR integration/RBAC remain follow-up work.
 
+Verified implementation commit 7c2f43f7b023fdd06d3e451a921808552d56b026:
+79 backend tests passed against PostgreSQL (no failures/errors/skips),
+8 frontend unit tests and 3 browser smoke tests passed, and both builds passed.
+Backend CI: https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38208003994
+Frontend CI: https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38208003993
+Browser tests use fixtures; Docker Compose runtime remains unverified here.
+
 ## 2026-10-12 — Built-in OAuth 2 login
 
 - Replaced external identity-provider configuration and token-paste UI with an

@@ -52,12 +52,12 @@ may reject them. Review flags are advisory.
 
 ## Validation status
 
-Built-in OAuth login verification passed: 56 backend tests against PostgreSQL,
-8 frontend unit tests, 2 browser smoke tests, and frontend/backend builds.
-[Backend CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38175230316)
-and [frontend CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38175230334).
+Catalog/baseline verification passed: 79 backend tests against PostgreSQL,
+8 frontend unit tests, 3 browser smoke tests, and frontend/backend builds.
+[Backend CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38208003994)
+and [frontend CI](https://github.com/pramod07info/changed-guard-enterprise/actions/runs/38208003993).
 Browser smoke tests use OAuth/API fixtures; backend tests perform real database
-login, PKCE exchange and signed-token API access. Docker Compose runtime has
+login, PKCE exchange, catalog/baseline persistence and tenant isolation. Docker Compose runtime has
 not been exercised here. See [authentication setup](docs/dashboard-security.md).
 
 ## Planned stack
