@@ -123,6 +123,41 @@ VALUES (?,?,?,?,?,?) ON CONFLICT (subscription_id,delivery_id) DO NOTHING
         .findFirst();
   }
 
+  public List<com.changeguard.dto.GitHubWebhookDeliverySummary> deliveries(
+      String tenant, UUID subscription, int limit, int offset) {
+    return jdbc.query(
+        """
+SELECT d.*, p.state AS check_state, p.attempts AS check_attempts,
+    p.check_run_id, p.error_code AS check_error
+FROM github_webhook_delivery d LEFT JOIN github_check_publication p
+  ON p.tenant_id=d.tenant_id AND p.subscription_id=d.subscription_id AND p.delivery_id=d.delivery_id
+WHERE d.tenant_id=? AND d.subscription_id=?
+ORDER BY d.created_at DESC, d.delivery_id DESC LIMIT ? OFFSET ?
+""",
+        (rs, row) ->
+            new com.changeguard.dto.GitHubWebhookDeliverySummary(
+                rs.getObject("delivery_id", UUID.class),
+                rs.getString("state"),
+                rs.getInt("attempts"),
+                rs.getObject("analysis_id", UUID.class),
+                rs.getString("error_code"),
+                rs.getInt("pull_number"),
+                rs.getString("head_sha"),
+                rs.getObject("created_at", java.time.OffsetDateTime.class).toInstant(),
+                rs.getString("check_state") == null
+                    ? null
+                    : new com.changeguard.dto.GitHubCheckStatus(
+                        rs.getString("check_state"),
+                        rs.getInt("check_attempts"),
+                        rs.getObject("check_run_id", Long.class),
+                        com.changeguard.config.GitHubAppSettings.checkName(subscription),
+                        rs.getString("check_error"))),
+        tenant,
+        subscription,
+        limit,
+        offset);
+  }
+
   // System worker scans a queue, never exposes an unscoped read API. FK carries tenant identity.
   public Optional<GitHubWebhookJob> claim() {
     UUID token = UUID.randomUUID();

@@ -223,6 +223,24 @@ class GitHubCheckHttpTest {
     assertEquals(401, request(null, "POST", "/retry").statusCode());
     assertEquals(404, request("check-other", "POST", "/retry").statusCode());
     assertEquals(409, request("check-owner", "POST", "/retry").statusCode());
+    var list =
+        http.send(
+            HttpRequest.newBuilder(
+                    URI.create(
+                        "http://127.0.0.1:"
+                            + port
+                            + "/api/v1/github/webhooks/"
+                            + SUB
+                            + "/deliveries"))
+                .header("Authorization", "Bearer check-owner")
+                .GET()
+                .build(),
+            HttpResponse.BodyHandlers.ofString());
+    assertEquals(200, list.statusCode());
+    var entries = json.readValue(list.body(), GitHubWebhookDeliverySummary[].class);
+    assertEquals(1, entries.length);
+    assertEquals("PUBLISHED", entries[0].check().state());
+    assertEquals(99L, entries[0].check().checkRunId());
     assertTrue(checks.claim().isEmpty());
   }
 

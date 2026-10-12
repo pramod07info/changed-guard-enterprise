@@ -3,15 +3,17 @@ import { api } from '../lib/api';
 import { parseInput } from '../lib/input';
 import { sample } from '../sample';
 import { GitHubPrPanel } from './GitHubPrPanel';
+import { WebhookPanel } from './WebhookPanel';
 import type { Baseline, BaselineSummary, CatalogService, Project, Report, SavedAnalysis } from '../types';
 
 type Props = {
   token: string; busy: boolean; fail: (message: string) => void;
   execute: <T>(task: () => Promise<T>, done: (value: T) => void) => Promise<void>;
   compared: (report: Report, saved: SavedAnalysis | null) => void;
+  loaded: (result: SavedAnalysis) => void;
 };
 const pageSize = 20;
-export function CatalogPanel({ token, busy, fail, execute, compared }: Props) {
+export function CatalogPanel({ token, busy, fail, execute, compared, loaded }: Props) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [project, setProject] = useState('');
   const [projectOffset, setProjectOffset] = useState(0);
@@ -129,6 +131,8 @@ export function CatalogPanel({ token, busy, fail, execute, compared }: Props) {
       <label htmlFor="baseline-dependencies">Baseline comparison dependencies</label><textarea id="baseline-dependencies" spellCheck={false} value={dependencies} onChange={event => setDependencies(event.target.value)}/>
       <div className="actions"><button disabled={busy} onClick={() => compare(true)}>Analyze baseline & save</button>
         <button disabled={busy} className="secondary" onClick={() => compare(false)}>Preview against baseline</button></div>
+      <WebhookPanel key={'webhook-' + baseline.id} baseline={baseline} repositoryUrl={service?.repositoryUrl ?? null}
+        dependencies={dependencies} token={token} busy={busy} fail={fail} execute={execute} loaded={loaded}/>
       <GitHubPrPanel key={baseline.id} baseline={baseline} repositoryUrl={service?.repositoryUrl ?? null}
         dependencies={dependencies} token={token} busy={busy} fail={fail} execute={execute} compared={compared}/>
     </>}

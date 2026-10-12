@@ -154,3 +154,15 @@ workflow executes this command on each push and pull request.
 - Added integration/controller/repository tests, Compose configuration and App/required
   check setup documentation. Private repositories, merge-group events and automatic
   branch-rule configuration remain outside this phase.
+
+## Webhook automation dashboard
+
+- Added baseline-scoped webhook registration, subscription selection, setup URL/check
+  name copy controls and responsive delivery cards to the React dashboard.
+- Added recent-delivery pagination, separate analysis/publication states, saved-report
+  loading and explicit failed-publication retry without rerunning analysis.
+- Added tenant-protected delivery list projection joining existing publication status;
+  preserved signed POST ingress and all existing authentication boundaries.
+- Added frontend helper/browser tests and backend pagination/tenant/join coverage.
+- Documented mobile/session behavior, fixture verification and the remaining operator
+  setup in `webhook-dashboard.md`; credentials and App approval remain outside the UI.

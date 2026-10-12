@@ -47,6 +47,14 @@ public class GitHubWebhookController {
         bytes);
   }
 
+  @GetMapping("/github/webhooks/{id}/deliveries")
+  public List<GitHubWebhookDeliverySummary> deliveries(
+      @PathVariable UUID id,
+      @RequestParam(defaultValue = "20") int limit,
+      @RequestParam(defaultValue = "0") int offset) {
+    return service.deliveries(id, limit, offset);
+  }
+
   @GetMapping("/github/webhooks/{id}/deliveries/{delivery}")
   public GitHubWebhookDelivery status(@PathVariable UUID id, @PathVariable UUID delivery) {
     return service.status(id, delivery);

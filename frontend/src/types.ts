@@ -16,3 +16,7 @@ export type BaselineSummary = { id: string; serviceId: string; serviceName: stri
 export type Baseline = BaselineSummary & { document: JsonObject };
 export type GitHubSource = { repository: string; headRepository: string; pullNumber: number; pullUrl: string; baseSha: string; headSha: string; contractPath: string; blobSha: string; fetchedAt: string };
 export type GitHubPrPreview = { baselineId: string; source: GitHubSource; report: Report };
+
+export type WebhookSubscription = { id: string; baselineId: string; repository: string; contractPath: string; deliveryPath: string };
+export type CheckPublication = { state: 'QUEUED' | 'PROCESSING' | 'PUBLISHED' | 'FAILED'; attempts: number; checkRunId: number | null; checkName: string; errorCode: string | null };
+export type WebhookDelivery = { deliveryId: string; state: 'QUEUED' | 'PROCESSING' | 'SUCCEEDED' | 'SUPERSEDED' | 'FAILED'; attempts: number; analysisId: string | null; errorCode: string | null; pullNumber: number; headSha: string; createdAt: string; check: CheckPublication | null };
