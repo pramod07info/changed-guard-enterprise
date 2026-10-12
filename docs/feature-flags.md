@@ -77,6 +77,8 @@ Disabled API routes return **503 application/problem+json**, title `Feature disa
 and the effective capability name in `feature`. Authentication runs first: anonymous
 business API calls still return 401. Signed webhook POST ingress retains its existing
 bearer exemption but returns 503 before signature validation/queueing when disabled.
+Existing GitHub merge rules remain external: disabling checks does not remove a required
+check rule, which may leave PRs waiting until the operator changes it or re-enables checks.
 Health remains available; disabling metrics hides Prometheus/info without stopping
 internal metric collection. Flags do not remove Java dependencies, Flyway migrations,
 PostgreSQL requirements or authentication startup configuration.

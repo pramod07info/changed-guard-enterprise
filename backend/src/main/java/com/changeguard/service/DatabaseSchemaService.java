@@ -2,11 +2,13 @@ package com.changeguard.service;
 
 import static com.changeguard.dto.ImpactReport.Risk.*;
 
+import com.changeguard.config.FeatureFlags;
 import com.changeguard.dto.*;
 import com.changeguard.exception.InvalidContractException;
 import com.changeguard.utility.CatalogInput;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -40,9 +42,8 @@ public class DatabaseSchemaService {
     this.json = json;
   }
 
-  @org.springframework.beans.factory.annotation.Autowired
-  public DatabaseSchemaService(
-      DependencyGraphService graph, JsonMapper json, com.changeguard.config.FeatureFlags flags) {
+  @Autowired
+  public DatabaseSchemaService(DependencyGraphService graph, JsonMapper json, FeatureFlags flags) {
     this.graph = graph;
     this.json = json;
     this.recommendations = flags.manifest().testRecommendations();

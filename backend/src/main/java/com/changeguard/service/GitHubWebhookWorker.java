@@ -1,5 +1,6 @@
 package com.changeguard.service;
 
+import com.changeguard.config.FeatureFlags;
 import com.changeguard.dto.OpenApiRequest;
 import com.changeguard.entity.GitHubWebhookJob;
 import com.changeguard.exception.GitHubIntegrationException;
@@ -43,7 +44,7 @@ public class GitHubWebhookWorker {
       AnalysisHistoryService history,
       PlatformTransactionManager manager,
       JsonMapper json,
-      com.changeguard.config.FeatureFlags flags,
+      FeatureFlags flags,
       @Value("${changeguard.github.webhooks.worker-enabled:true}") boolean polling) {
     this.jobs = jobs;
     this.baselines = baselines;

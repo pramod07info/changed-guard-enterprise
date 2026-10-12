@@ -1,5 +1,6 @@
 package com.changeguard.service;
 
+import com.changeguard.config.FeatureFlags;
 import com.changeguard.dto.ImpactReport;
 import com.changeguard.dto.ImpactReport.Risk;
 import com.changeguard.dto.OpenApiReport;
@@ -15,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /** Bounded OpenAPI 3.0 JSON importer. Never fetches references or executes code. */
@@ -52,8 +54,8 @@ public class OpenApiService {
 
   record Operation(Schema request, boolean requestRequired, Map<String, Schema> responses) {}
 
-  @org.springframework.beans.factory.annotation.Autowired
-  public OpenApiService(DependencyGraphService graph, com.changeguard.config.FeatureFlags flags) {
+  @Autowired
+  public OpenApiService(DependencyGraphService graph, FeatureFlags flags) {
     this.graph = graph;
     this.recommendations = flags.manifest().testRecommendations();
   }

@@ -1,10 +1,12 @@
 package com.changeguard.service;
 
+import com.changeguard.config.FeatureFlags;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.HexFormat;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -15,10 +17,9 @@ public class GitHubWebhookSignature {
   private final String secret;
   private final boolean enabled;
 
-  @org.springframework.beans.factory.annotation.Autowired
+  @Autowired
   public GitHubWebhookSignature(
-      com.changeguard.config.FeatureFlags flags,
-      @Value("${changeguard.github.webhooks.secret:}") String secret) {
+      FeatureFlags flags, @Value("${changeguard.github.webhooks.secret:}") String secret) {
     this(secret, flags.manifest().webhooks());
   }
 

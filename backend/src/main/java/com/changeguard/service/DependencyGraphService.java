@@ -1,5 +1,6 @@
 package com.changeguard.service;
 
+import com.changeguard.config.FeatureFlags;
 import com.changeguard.dto.ImpactReport.Consumer;
 import com.changeguard.exception.InvalidContractException;
 import java.util.ArrayDeque;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /** Shared cycle-safe dependency traversal. Graph edges are consumer -> providers. */
@@ -21,8 +23,8 @@ public class DependencyGraphService {
     enabled = true;
   }
 
-  @org.springframework.beans.factory.annotation.Autowired
-  public DependencyGraphService(com.changeguard.config.FeatureFlags flags) {
+  @Autowired
+  public DependencyGraphService(FeatureFlags flags) {
     enabled = flags.manifest().dependencyAnalysis();
   }
 

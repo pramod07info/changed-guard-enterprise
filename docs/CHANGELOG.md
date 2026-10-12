@@ -7,6 +7,7 @@
 - Applied flags to new report graph/test enrichments and GitHub startup/queue/network work.
 - Dashboard loads a strict server manifest; hidden modules, preview-only and checks-off flows are supported.
 - Added matching config/service/controller tests and unit/browser capability coverage.
+- Bounded test-only JDBC pools so cached Spring integration contexts do not exhaust PostgreSQL connections.
 - Added Compose variable forwarding and feature-flags.md with defaults, PowerShell examples, restart/resume behavior and scope.
 - Existing OAuth/tenant isolation and stored evidence remain unchanged; GitHub opt-ins still default off.
 

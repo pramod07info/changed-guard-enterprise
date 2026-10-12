@@ -1,5 +1,6 @@
 package com.changeguard.service;
 
+import com.changeguard.config.FeatureFlags;
 import com.changeguard.dto.BaselineAnalysisRequest;
 import com.changeguard.dto.BaselineResponse;
 import com.changeguard.dto.GitHubPrPreview;
@@ -10,6 +11,7 @@ import com.changeguard.exception.InvalidContractException;
 import com.changeguard.integration.github.GitHubPrClient;
 import com.changeguard.integration.github.GitHubRepository;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -21,13 +23,13 @@ public class GitHubPrService {
   private final DependencyGraphService graph;
   private final boolean enabled;
 
-  @org.springframework.beans.factory.annotation.Autowired
+  @Autowired
   public GitHubPrService(
       BaselineService baselines,
       CatalogService catalog,
       GitHubPrClient github,
       DependencyGraphService graph,
-      com.changeguard.config.FeatureFlags flags) {
+      FeatureFlags flags) {
     this.baselines = baselines;
     this.catalog = catalog;
     this.github = github;

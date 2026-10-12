@@ -1,5 +1,6 @@
 package com.changeguard.service;
 
+import com.changeguard.config.FeatureFlags;
 import com.changeguard.dto.ImpactReport;
 import com.changeguard.dto.ImpactReport.Consumer;
 import com.changeguard.dto.ImpactReport.Finding;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,8 +28,8 @@ public class ImpactService {
   private static final Set<String> TYPES =
       Set.of("string", "integer", "number", "boolean", "object", "array");
 
-  @org.springframework.beans.factory.annotation.Autowired
-  public ImpactService(DependencyGraphService graph, com.changeguard.config.FeatureFlags flags) {
+  @Autowired
+  public ImpactService(DependencyGraphService graph, FeatureFlags flags) {
     this.graph = graph;
     this.recommendations = flags.manifest().testRecommendations();
   }
