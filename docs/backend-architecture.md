@@ -83,3 +83,26 @@ request bodies. Network I/O happens before the transactional baseline save.
 `GitHubSource` is a provenance DTO, serialized to nullable report JSONB by the
 existing repository. Source requires a baseline through the V6 constraint.
 Tests mirror the integration/controller/service/repository boundaries.
+
+## Durable GitHub webhook analysis
+
+`GitHubWebhookController` handles subscription transport and bounded raw delivery
+reads. `GitHubWebhookService` owns JWT-based baseline registration, event validation
+and deduplicated enqueue. `GitHubWebhookSignature` verifies exact-byte HMAC before
+an ingress subscription lookup. Only the exact POST delivery route is bearer-exempt;
+it still requires the configured webhook signature. Operator-owned webhook secrets
+never reach tenant DTOs or the frontend.
+
+`GitHubWebhookRepository` owns subscription/job SQL; V7 adds composite tenant foreign
+keys, immutable baseline/path bindings, delivery uniqueness and queue state checks.
+The explicitly named ingress lookup and worker queue scan are trusted system
+boundaries; tenant-facing reads always filter tenant identity. Worker claims carry
+that persisted identity, and no synthetic JWT authentication is introduced.
+
+`GitHubWebhookWorker` claims durable leases, performs network I/O outside database
+transactions, rejects superseded heads and atomically saves analysis plus job outcome.
+The package-private `AnalysisHistoryService.createForTenant` is callable only inside
+this trusted service layer with an enclosing transaction; existing public methods
+still require JWT tenant identity. Lease ownership is rechecked under row lock before
+any evidence write. See `github-webhooks.md` for setup, retries and scope. Check-run
+publishing, merge blocking and frontend webhook management remain unimplemented.

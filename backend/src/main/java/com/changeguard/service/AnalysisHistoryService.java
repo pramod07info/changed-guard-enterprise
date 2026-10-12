@@ -49,7 +49,13 @@ public class AnalysisHistoryService {
 
     @Transactional
     public SavedAnalysis create(OpenApiRequest request, UUID baselineId, com.changeguard.dto.GitHubSource source) {
-        String tenantId = tenant.requiredTenant();
+        return createForTenant(tenant.requiredTenant(), request, baselineId, source);
+    }
+
+    // Internal worker boundary: the tenant comes from a persisted, authenticated subscription.
+    // Callers must supply an enclosing transaction; this is deliberately not a public API.
+    SavedAnalysis createForTenant(String tenantId, OpenApiRequest request, UUID baselineId, com.changeguard.dto.GitHubSource source) {
+        if (!TenantContext.validTenant(tenantId)) throw new IllegalArgumentException("Invalid internal tenant");
         if (request == null) throw new InvalidContractException("request is required");
         validateService(request.service());
         OpenApiReport report = analysis.analyze(request);
