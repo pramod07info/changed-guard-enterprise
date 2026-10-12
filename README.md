@@ -11,6 +11,7 @@ pramod07info/ChangeGuard.
 - Project/service catalog, immutable versioned baselines and baseline-linked comparison evidence.
 - Opt-in public GitHub PR contract comparison with pinned commit/blob evidence.
 - Signed webhooks and durable tenant-bound automatic analysis with retries.
+- Mobile-friendly webhook registration/setup, recent deliveries, publication status/retry and saved-report dashboard.
 - Opt-in GitHub App checks on exact commit SHAs, a separate publication queue and tenant-protected status/retry APIs.
 
 - Normalized response contract comparison: endpoint removal, field removal, type changes.
@@ -75,6 +76,8 @@ reads, [signed webhooks](docs/github-webhooks.md) for automatic analysis, and
 [GitHub App checks](docs/github-app-checks.md) for repository-scoped check publishing
 and required-check setup. App writes are disabled by default. Private repository
 access and automatic merge-rule configuration remain unimplemented.
+
+See [webhook dashboard](docs/webhook-dashboard.md) for UI registration, setup and delivery/check status.
 
 See [architecture](docs/architecture.md) for implementation status and sequence.
 See [backend package conventions](docs/backend-architecture.md) and

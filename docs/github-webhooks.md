@@ -42,8 +42,8 @@ The 201 response includes the subscription ID, repository, baseline ID and
 The repository comes from the tenant's catalog service. A baseline/path pair can
 be registered only once (409 on duplicates). The binding is immutable; list up to
 100 bindings with `GET /api/v1/baselines/{baselineId}/github-webhooks`.
-Registration currently uses existing tenant membership permissions; no new RBAC
-or per-subscription disable/delete UI is provided. Disable the global feature
+Registration uses existing tenant membership permissions; the dashboard now provides
+a registration/status UI, but no new RBAC or per-subscription disable/delete controls. Disable the global feature
 and remove the GitHub webhook if an operator needs to stop deliveries.
 
 Configure a **repository webhook** in GitHub Settings with:
@@ -95,8 +95,7 @@ Authorization: Bearer <access-token>
 ```
 
 The tenant-scoped result includes state, attempts, analysisId and safe errorCode.
-Successful reports appear in the existing history dashboard. There is no new
-frontend webhook management panel in this phase.
+Successful reports appear in the existing history dashboard. A baseline-scoped frontend panel is now available; see `webhook-dashboard.md`.
 
 States: `QUEUED`, `PROCESSING`, `SUCCEEDED`, `SUPERSEDED`, `FAILED`.
 For success, retrieve the existing `/api/v1/analyses/{analysisId}` endpoint.

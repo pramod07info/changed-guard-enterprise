@@ -8,7 +8,7 @@ suggests tests; it must not override compatibility rules or deploy changes.
 | --- | --- | --- |
 | Backend | Java 21, Spring Boot | First impact API implemented |
 | AI agents | Spring AI; LangChain4j alternative | Planned; choose one after compatibility validation |
-| Frontend | React, TypeScript | Dashboard, analysis/history/snapshot views implemented |
+| Frontend | React, TypeScript | Dashboard, analysis/history/snapshot and webhook/check management views implemented |
 | Messaging | Apache Kafka | Planned asynchronous analysis jobs |
 | Database | PostgreSQL, pgvector | Tenant-scoped history, users, projects, services and baselines implemented; audit and pgvector planned |
 | Dependency analysis | JavaParser, Neo4j | Planned source extraction and persisted graph |

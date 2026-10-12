@@ -151,7 +151,8 @@ The application publishes checks; GitHub's configured rules enforce merge blocki
 This phase does not change those rules automatically. Only configured checks are
 required; the absence of a rule means check failure alone does not prevent a merge.
 Merge-queue `merge_group` events, PR comments, requested check reruns, private repos,
-webhook management UI, RBAC, publication quotas and retention remain future work.
+RBAC, publication quotas and retention remain future work. A registration/status/retry
+dashboard is now available; see `webhook-dashboard.md`.
 If you use a merge queue, do not enable this as a required merge-queue check until
 `merge_group` support is implemented.
 

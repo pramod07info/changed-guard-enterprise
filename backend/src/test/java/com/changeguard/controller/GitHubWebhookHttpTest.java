@@ -414,4 +414,42 @@ class GitHubWebhookHttpTest {
     assertEquals("FAILED", state(s, id).state());
     assertTrue(jobs.claim().isEmpty());
   }
+
+  @Test
+  void recentDeliveriesArePaginatedAndTenantProtected() throws Exception {
+    var s = setup();
+    var first = UUID.randomUUID();
+    var second = UUID.randomUUID();
+    signed(s, first, payload("team/payments", "b".repeat(40)));
+    signed(s, second, payload("team/payments", "d".repeat(40)));
+    String path = "/github/webhooks/" + s.subscription() + "/deliveries";
+    var page =
+        json.readValue(
+            api("owner", "GET", path + "?limit=1&offset=0", null).body(),
+            GitHubWebhookDeliverySummary[].class);
+    var next =
+        json.readValue(
+            api("owner", "GET", path + "?limit=1&offset=1", null).body(),
+            GitHubWebhookDeliverySummary[].class);
+    assertEquals(1, page.length);
+    assertEquals(1, next.length);
+    assertNotEquals(page[0].deliveryId(), next[0].deliveryId());
+    assertEquals(7, page[0].pullNumber());
+    assertEquals("QUEUED", page[0].state());
+    assertNotNull(page[0].createdAt());
+    assertNull(page[0].check());
+    assertEquals(
+        0,
+        json.readValue(
+                api("owner", "GET", path + "?offset=2", null).body(),
+                GitHubWebhookDeliverySummary[].class)
+            .length);
+    assertEquals(404, api("other", "GET", path, null).statusCode());
+    assertEquals(401, api(null, "GET", path, null).statusCode());
+    assertEquals(400, api("owner", "GET", path + "?limit=0", null).statusCode());
+    assertEquals(
+        404,
+        api("owner", "GET", "/github/webhooks/" + UUID.randomUUID() + "/deliveries", null)
+            .statusCode());
+  }
 }

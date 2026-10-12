@@ -125,3 +125,19 @@ of analysis. All network I/O runs outside database transactions. The controller
 and service expose tenant-protected publication status and explicit failed-publication
 retry. No route grants App approval or accepts installation credentials from users.
 See `github-app-checks.md` for setup, reconciliation limits and required-check rules.
+
+## Dashboard delivery reads
+
+`GitHubWebhookController` exposes a bearer-protected paginated GET collection in
+addition to signed POST ingress. `GitHubWebhookService` validates the tenant-owned
+subscription and pagination; `GitHubWebhookRepository.deliveries` owns the bound SQL
+and tenant-matched LEFT JOIN publication projection. `GitHubWebhookDeliverySummary`
+is the transport record. The projection excludes report/contract JSON and credentials.
+No new migration or weakening of POST HMAC authentication is introduced.
+
+Frontend `WebhookPanel` lives under the selected catalog baseline and delegates
+HTTP to the existing session-aware executor. `lib/webhooks` owns input/URL validation;
+`lib/github` shares contract-path validation with manual PR comparison. Typed delivery
+and publication transports remain in `types.ts`. Selection epochs discard late results
+and errors; current 401s use the existing sign-out/clear behavior. See
+`webhook-dashboard.md` for setup and read/retry actions.

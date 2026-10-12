@@ -75,7 +75,9 @@ export default function App() {
       {error && <div className="alert" role="alert">{error}</div>}{notice && <div className="notice" role="status">{notice}</div>}
       {busy && <p role="status" className="subtle">Working…</p>}
       {!connection ? <ConnectionPanel login={login} busy={busy}/> : <>
-        <CatalogPanel token={connection.token} busy={busy} fail={setError} execute={run} compared={(result, persisted) => {
+        <CatalogPanel token={connection.token} busy={busy} fail={setError} execute={run} loaded={result => {
+          setSaved(result); setReport(result.report); setSnapshot(null); setNotice('Saved webhook analysis loaded.');
+        }} compared={(result, persisted) => {
           setReport(result); setSaved(persisted); setSnapshot(null); setHistory([]); setPage({ service: '', offset: 0 });
           setNotice(persisted ? 'Baseline comparison and evidence saved.' : 'Baseline preview complete. This report has not been saved.');
         }}/>

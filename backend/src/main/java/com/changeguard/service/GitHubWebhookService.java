@@ -84,6 +84,15 @@ public class GitHubWebhookService {
     return repository.list(tenant.requiredTenant(), baseline).stream().map(this::response).toList();
   }
 
+  public List<GitHubWebhookDeliverySummary> deliveries(UUID subscription, int limit, int offset) {
+    String tenantId = tenant.requiredTenant();
+    repository
+        .find(tenantId, subscription)
+        .orElseThrow(() -> new ResourceNotFoundException("Webhook not found"));
+    com.changeguard.utility.CatalogInput.page(limit, offset);
+    return repository.deliveries(tenantId, subscription, limit, offset);
+  }
+
   public GitHubWebhookDelivery status(UUID subscription, UUID delivery) {
     return repository
         .delivery(tenant.requiredTenant(), subscription, delivery)
