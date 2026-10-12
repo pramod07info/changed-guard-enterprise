@@ -26,6 +26,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.json.JsonMapper;
@@ -63,7 +64,7 @@ class GitHubWebhookHttpTest {
   @LocalServerPort int port;
   @Autowired JsonMapper json;
   @Autowired JdbcTemplate jdbc;
-  @Autowired GitHubWebhookRepository jobs;
+  @MockitoSpyBean GitHubWebhookRepository jobs;
   @Autowired GitHubWebhookWorker worker;
   @Autowired PlatformTransactionManager manager;
   final HttpClient client = HttpClient.newHttpClient();
@@ -343,6 +344,42 @@ class GitHubWebhookHttpTest {
         0,
         jdbc.queryForObject(
             "SELECT count(*) FROM contract_snapshot WHERE tenant_id=?", Integer.class, TENANT));
+  }
+
+  @Test
+  void completionFailureRollsBackSavedEvidence() throws Exception {
+    var s = setup();
+    var id = UUID.randomUUID();
+    signed(s, id, payload("team/payments", "b".repeat(40)));
+    candidate("b".repeat(40), document);
+    doThrow(new IllegalStateException("fixture completion failure"))
+        .when(jobs)
+        .finish(any(), eq("SUCCEEDED"), any(), isNull());
+    worker.process(claim());
+    assertEquals("QUEUED", state(s, id).state());
+    assertEquals(0, reports());
+    assertEquals(
+        0,
+        jdbc.queryForObject(
+            "SELECT count(*) FROM contract_snapshot WHERE tenant_id=?", Integer.class, TENANT));
+  }
+
+  @Test
+  void registrationRejectsDuplicatesInvalidPathsAndForeignBaselines() throws Exception {
+    var s = setup();
+    String path = "/baselines/" + s.baseline() + "/github-webhooks";
+    assertEquals(
+        409,
+        api("owner", "POST", path, new GitHubWebhookRequest("openapi.json", Map.of()))
+            .statusCode());
+    assertEquals(
+        400,
+        api("owner", "POST", path, new GitHubWebhookRequest("../openapi.json", Map.of()))
+            .statusCode());
+    assertEquals(
+        404,
+        api("other", "POST", path, new GitHubWebhookRequest("other.json", Map.of())).statusCode());
+    verifyNoInteractions(github);
   }
 
   @Test
