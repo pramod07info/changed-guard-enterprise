@@ -277,7 +277,7 @@ class GitHubCheckHttpTest {
     assertEquals(202, request("check-owner", "POST", "/retry").statusCode());
     assertEquals("QUEUED", state().state());
     assertEquals(0, state().attempts());
-    when(client.publish(any(), anyString(), anyString())).thenReturn(99L);
+    doReturn(99L).when(client).publish(any(), anyString(), anyString());
     publisher.process(claim());
     assertEquals("PUBLISHED", state().state());
   }
